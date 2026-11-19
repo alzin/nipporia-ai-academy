@@ -35,7 +35,7 @@ npm ci
 npm start                   # http://localhost:3000
 ```
 
-Email: with `EMAIL_HOST` set, mail goes out over SMTP (production: info@nipporia.com through GoDaddy, `smtpout.secureserver.net:465`); otherwise through Resend if `RESEND_API_KEY` is set; otherwise it is printed to the backend console. Without `STRIPE_SECRET_KEY` payment calls are disabled.
+Email: with `EMAIL_HOST` set, mail goes out over SMTP (production: info@nipporia.com through Microsoft 365, `smtp.office365.com:587`); otherwise through Resend if `RESEND_API_KEY` is set; otherwise it is printed to the backend console. Without `STRIPE_SECRET_KEY` payment calls are disabled.
 
 ## Payments (Stripe)
 

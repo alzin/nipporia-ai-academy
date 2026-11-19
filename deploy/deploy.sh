@@ -33,7 +33,7 @@ if has_version academy-stripe-webhook-secret; then SECRETS+=",STRIPE_WEBHOOK_SEC
 
 ENVS="NODE_ENV=production,API_URL=$SITE/api,FRONTEND_URL=$SITE"
 ENVS+=",AWS_REGION=ap-northeast-1,AWS_S3_BUCKET_NAME=nipporia-ai-academy"
-ENVS+=",EMAIL_HOST=smtpout.secureserver.net,EMAIL_PORT=465,EMAIL_USER=info@nipporia.com,EMAIL_FROM=info@nipporia.com"
+ENVS+=",EMAIL_HOST=smtp.office365.com,EMAIL_PORT=587,EMAIL_USER=info@nipporia.com,EMAIL_FROM=info@nipporia.com"
 ENVS+=",GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,FREE_TRIAL_DAYS=0"
 # Stripe IDs (not secret) from deploy/stripe-live.env, written by enable-stripe-live.ps1
 if [ -f deploy/stripe-live.env ]; then

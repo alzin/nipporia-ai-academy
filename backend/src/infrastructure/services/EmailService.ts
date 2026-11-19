@@ -18,8 +18,9 @@ export class EmailService implements IEmailService {
     this.transporter = nodemailer.createTransport({
       host: ENV_CONFIG.EMAIL_HOST,
       port: ENV_CONFIG.EMAIL_PORT,
-      // 465 = TLS from the start (GoDaddy smtpout.secureserver.net); 587 = STARTTLS.
+      // 465 = TLS from the start; 587 = STARTTLS (production: Microsoft 365, smtp.office365.com).
       secure: ENV_CONFIG.EMAIL_PORT === 465,
+      requireTLS: ENV_CONFIG.EMAIL_PORT !== 465,
       auth: {
         user: ENV_CONFIG.EMAIL_USER,
         pass: ENV_CONFIG.EMAIL_PASS,
