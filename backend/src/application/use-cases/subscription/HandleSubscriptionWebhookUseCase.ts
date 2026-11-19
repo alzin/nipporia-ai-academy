@@ -99,61 +99,7 @@ export class HandleSubscriptionWebhookUseCase {
             }
         }
 
-        // Handle one-time payment (one-time plan)
-        if (session.mode === 'payment') {
-            await this.handleOneTimePayment(session, userId, email);
-        }
-        // Subscription will be handled by customer.subscription.created/updated event
-    }
-
-
-    private async handleOneTimePayment(session: Stripe.Checkout.Session, userId: string, email: string): Promise<void> {
-
-        // Create or get customer
-        let customerId = session.customer as string;
-        if (!customerId && session.customer_email) {
-            customerId = await this.paymentService.createCustomer(session.customer_email);
-        }
-
-        // Calculate one-time period (e.g., 100 years)
-        const currentPeriodStart = new Date();
-        const currentPeriodEnd = new Date();
-        currentPeriodEnd.setFullYear(currentPeriodEnd.getFullYear() + 100);
-
-        // Check if user already has a subscription
-        const existingSubscription = await this.subscriptionRepository.findByUserId(userId);
-
-        if (existingSubscription) {
-            // Update existing subscription
-            existingSubscription.email = email;
-            existingSubscription.stripeCustomerId = customerId;
-            existingSubscription.stripePaymentIntentId = session.payment_intent as string;
-            existingSubscription.subscriptionPlan = 'one-time' as SubscriptionPlan;
-            existingSubscription.status = 'active';
-            existingSubscription.currentPeriodStart = currentPeriodStart;
-            existingSubscription.currentPeriodEnd = currentPeriodEnd;
-            existingSubscription.updatedAt = new Date();
-
-            await this.subscriptionRepository.update(existingSubscription);
-        } else {
-            // Create new subscription
-            const subscription = new Subscription(
-                this.generateSubscriptionId(),
-                userId,
-                email,
-                customerId,
-                undefined, // No subscription ID for one-time payments
-                session.payment_intent as string,
-                'one-time' as SubscriptionPlan,
-                'active',
-                currentPeriodStart,
-                currentPeriodEnd,
-                new Date(),
-                new Date()
-            );
-
-            await this.subscriptionRepository.create(subscription);
-        }
+        // The subscription itself is saved by customer.subscription.created/updated
     }
 
     private async handleSubscriptionCreated(stripeSubscription: Stripe.Subscription): Promise<void> {
@@ -338,23 +284,12 @@ export class HandleSubscriptionWebhookUseCase {
         const priceId = stripeSubscription.items.data[0]?.price.id;
         const interval = stripeSubscription.items.data[0]?.price.recurring?.interval;
 
-        // Map your Stripe price IDs to subscription plans
-        // You should store these in environment variables
-        const priceMappings: Record<string, SubscriptionPlan> = {
-            [ENV_CONFIG.STRIPE_MONTHLY_PRICE_ID || '']: 'monthly',
-            [ENV_CONFIG.STRIPE_YEARLY_PRICE_ID || '']: 'yearly',
-            [ENV_CONFIG.STRIPE_ONE_TIME_PRICE_ID || '']: 'one-time',
-            [ENV_CONFIG.STRIPE_STANDARD_PRICE_ID || '']: 'standard',
-            [ENV_CONFIG.STRIPE_PREMIUM_PRICE_ID || '']: 'premium',
-            [ENV_CONFIG.STRIPE_MONTHLY_DISCOUNT_PRICE_ID || '']: 'monthly',
-            [ENV_CONFIG.STRIPE_YEARLY_DISCOUNT_PRICE_ID || '']: 'yearly',
-            [ENV_CONFIG.STRIPE_STANDARD_DISCOUNT_PRICE_ID || '']: 'standard',
-            [ENV_CONFIG.STRIPE_PREMIUM_DISCOUNT_PRICE_ID || '']: 'premium',
-        };
-
-        // Try to get plan from price ID mapping
-        if (priceId && priceMappings[priceId]) {
-            return priceMappings[priceId];
+        // Only two plans: monthly and yearly
+        if (priceId && priceId === ENV_CONFIG.STRIPE_MONTHLY_PRICE_ID) {
+            return 'monthly';
+        }
+        if (priceId && priceId === ENV_CONFIG.STRIPE_YEARLY_PRICE_ID) {
+            return 'yearly';
         }
 
         // Fallback to interval-based detection

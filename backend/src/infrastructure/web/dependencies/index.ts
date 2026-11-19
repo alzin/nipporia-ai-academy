@@ -148,7 +148,6 @@ import { CreatePaymentIntentUseCase } from "../../../application/use-cases/payme
 import { CreateCheckoutSessionUseCase } from "../../../application/use-cases/payment/CreateCheckoutSessionUseCase";
 import { VerifyCheckoutSessionUseCase } from "../../../application/use-cases/payment/VerifyCheckoutSessionUseCase";
 import { CreateCustomerPortalUseCase } from "../../../application/use-cases/payment/CreateCustomerPortalUseCase";
-import { CheckDiscountEligibilityUseCase } from "../../../application/use-cases/payment/CheckDiscountEligibilityUseCase";
 import { EndTrialUseCase } from "../../../application/use-cases/payment/EndTrialUseCase";
 import { HandleWebhookUseCase } from "../../../application/use-cases/payment/HandleWebhookUseCase";
 
@@ -335,7 +334,6 @@ export interface DependencyContainer {
         createCheckoutSession: CreateCheckoutSessionUseCase;
         verifyCheckoutSession: VerifyCheckoutSessionUseCase;
         createCustomerPortal: CreateCustomerPortalUseCase;
-        checkDiscountEligibility: CheckDiscountEligibilityUseCase;
         endTrial: EndTrialUseCase;
         handleWebhook: HandleWebhookUseCase;
 
@@ -813,9 +811,6 @@ export const setupDependencies = (): DependencyContainer => {
             services.payment,
             repositories.subscription
         ),
-        checkDiscountEligibility: new CheckDiscountEligibilityUseCase(
-            repositories.subscription
-        ),
         endTrial: new EndTrialUseCase(
             services.payment,
             repositories.subscription
@@ -983,7 +978,6 @@ export const setupDependencies = (): DependencyContainer => {
             useCases.createCheckoutSession,
             useCases.verifyCheckoutSession,
             useCases.createCustomerPortal,
-            useCases.checkDiscountEligibility,
             useCases.endTrial,
             useCases.handleWebhook
         ),

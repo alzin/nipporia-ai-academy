@@ -26,7 +26,7 @@ export interface Subscription {
     stripeCustomerId: string;
     stripeSubscriptionId?: string;
     stripePaymentIntentId?: string;
-    subscriptionPlan: 'monthly' | 'yearly' | 'one-time' | 'standard' | 'premium';
+    subscriptionPlan: 'monthly' | 'yearly';
     status: 'active' | 'canceled' | 'past_due' | 'unpaid' | 'trialing';
     currentPeriodStart: string;
     currentPeriodEnd: string;

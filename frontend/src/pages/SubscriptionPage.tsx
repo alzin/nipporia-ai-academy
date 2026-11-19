@@ -13,17 +13,11 @@ import {
   CardContent,
   Divider,
 } from "@mui/material";
-import {
-  Check,
-  Close,
-  Logout,
-  TrendingUp,
-  TrendingDown,
-} from "@mui/icons-material";
+import { Check, Logout, SwapHoriz } from "@mui/icons-material";
 import { loadStripe } from "@stripe/stripe-js";
 import { AppDispatch, RootState } from "../store/store";
 import { useDispatch, useSelector } from "react-redux";
-import { paymentService, DiscountStatus } from "../services/paymentService";
+import { paymentService } from "../services/paymentService";
 import { logout, checkPayment } from "../store/slices/authSlice";
 import {
   getStoredPlan,
@@ -33,66 +27,16 @@ import {
 } from "../utils/planStorage";
 import { useSweetAlert } from "../utils/sweetAlert";
 import { colors } from "../theme/theme";
+import {
+  PLANS,
+  PLAN_FEATURES,
+  MembershipPlanId,
+  formatYen,
+} from "../utils/plans";
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY!);
 
-interface PlanOption {
-  id: string;
-  name: string;
-  regularPrice: number;
-  discountedPrice: number;
-  currency: string;
-  period: string;
-  features: {
-    title: string;
-    included: boolean;
-  }[];
-  recommended?: boolean;
-  savings?: number;
-}
-
-const plans: PlanOption[] = [
-  {
-    id: "standard",
-    name: "スタンダードプラン",
-    regularPrice: 12500,
-    discountedPrice: 8800,
-    currency: "JPY",
-    period: "month",
-    savings: 30,
-    features: [
-      { title: "すべての講座とレッスン", included: true },
-      { title: "コミュニティへの投稿とコメント", included: true },
-    ],
-  },
-  {
-    id: "premium",
-    name: "プレミアムプラン",
-    regularPrice: 35000,
-    discountedPrice: 24500,
-    currency: "JPY",
-    period: "month",
-    savings: 30,
-    recommended: true,
-    features: [
-      { title: "すべての講座とレッスン", included: true },
-      { title: "コミュニティへの投稿とコメント", included: true },
-    ],
-  },
-];
-
-// Plan hierarchy for determining upgrade vs downgrade
-const PLAN_HIERARCHY: Record<string, number> = {
-  standard: 1,
-  premium: 2,
-};
-
-type ButtonVariant =
-  | "subscribe"
-  | "payNow"
-  | "upgrade"
-  | "downgrade"
-  | "current";
+type ButtonVariant = "subscribe" | "change" | "current";
 
 interface ButtonState {
   disabled: boolean;
@@ -105,25 +49,16 @@ export const SubscriptionPage: React.FC = () => {
   const location = useLocation();
   const dispatch = useDispatch<AppDispatch>();
 
-  const [selectedPlan, setSelectedPlan] = useState<string>("standard");
+  const [selectedPlan, setSelectedPlan] = useState<MembershipPlanId>("monthly");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { showSuccessToast } = useSweetAlert();
-  const [discountStatus, setDiscountStatus] = useState<DiscountStatus | null>(
-    null,
-  );
-  const [loadingDiscount, setLoadingDiscount] = useState(true);
   const [autoCheckoutInProgress, setAutoCheckoutInProgress] = useState(false);
   const [, setHasPreSelectedPlan] = useState(false);
 
-  const {
-    hasSubscription,
-    currentPlan,
-    isTrialing,
-    status,
-    isInFreeTrial,
-    freeTrialExpired,
-  } = useSelector((state: RootState) => state.auth);
+  const { hasSubscription, currentPlan, status } = useSelector(
+    (state: RootState) => state.auth,
+  );
 
   const autoCheckoutTriggered = useRef(false);
 
@@ -144,8 +79,6 @@ export const SubscriptionPage: React.FC = () => {
   }, [location.search]);
 
   useEffect(() => {
-    fetchDiscountStatus();
-
     const storedPlan = getStoredPlan();
     const params = new URLSearchParams(location.search);
     const urlPlan = params.get("plan");
@@ -163,7 +96,6 @@ export const SubscriptionPage: React.FC = () => {
 
     if (
       autoCheckoutPlan &&
-      !loadingDiscount &&
       !autoCheckoutTriggered.current &&
       !hasSubscription
     ) {
@@ -172,39 +104,19 @@ export const SubscriptionPage: React.FC = () => {
       clearStoredPlan();
       handleSelectPlan(autoCheckoutPlan);
     }
-  }, [loadingDiscount, getAutoCheckoutPlan, hasSubscription]);
+  }, [getAutoCheckoutPlan, hasSubscription]);
 
   const handleLogout = () => {
     dispatch(logout());
   };
 
-  const fetchDiscountStatus = async () => {
-    try {
-      const status = await paymentService.checkDiscountStatus();
-      setDiscountStatus(status);
-    } catch (err) {
-      // Error silently handled
-    } finally {
-      setLoadingDiscount(false);
-    }
-  };
-
   /**
    * Determine button state for each plan
    */
-  const getButtonState = (planId: string): ButtonState => {
+  const getButtonState = (planId: MembershipPlanId): ButtonState => {
     const isCurrentPlan = currentPlan === planId;
 
-    // User is in free trial (no credit card) OR has expired trial - show Subscribe
-    if (isInFreeTrial || freeTrialExpired) {
-      return {
-        disabled: false,
-        label: freeTrialExpired ? "メンバーになる" : "有料プランに切り替える",
-        variant: "subscribe",
-      };
-    }
-
-    // No subscription - show normal subscribe button
+    // No subscription → subscribe
     if (!hasSubscription || !currentPlan) {
       return {
         disabled: false,
@@ -213,7 +125,7 @@ export const SubscriptionPage: React.FC = () => {
       };
     }
 
-    // ===== CASE 2: Subscription is CANCELED =====
+    // Subscription ended → subscribe again
     if (status !== "active" && status !== "trialing") {
       return {
         disabled: false,
@@ -222,17 +134,7 @@ export const SubscriptionPage: React.FC = () => {
       };
     }
 
-    // Current plan + Trialing → "Pay Now"
-    if (isCurrentPlan && isTrialing) {
-      return {
-        disabled: false,
-        label: "今すぐ支払う",
-        variant: "payNow",
-      };
-    }
-
-    // Current plan + Active → Disabled
-    if (isCurrentPlan && !isTrialing) {
+    if (isCurrentPlan) {
       return {
         disabled: true,
         label: "利用中のプラン",
@@ -240,30 +142,16 @@ export const SubscriptionPage: React.FC = () => {
       };
     }
 
-    // Different plan - check if upgrade or downgrade
-    const currentHierarchy = PLAN_HIERARCHY[currentPlan] || 0;
-    const targetHierarchy = PLAN_HIERARCHY[planId] || 0;
-
-    if (targetHierarchy > currentHierarchy) {
-      // UPGRADE
-      return {
-        disabled: false,
-        label: "このプランに変更する",
-        variant: "upgrade",
-        icon: <TrendingUp sx={{ fontSize: 18, mr: 1 }} aria-hidden />,
-      };
-    } else {
-      // DOWNGRADE
-      return {
-        disabled: false,
-        label: "このプランに変更する",
-        variant: "downgrade",
-        icon: <TrendingDown sx={{ fontSize: 18, mr: 1 }} aria-hidden />,
-      };
-    }
+    // The other plan → switch
+    return {
+      disabled: false,
+      label: "このプランに切り替える",
+      variant: "change",
+      icon: <SwapHoriz sx={{ fontSize: 18, mr: 1 }} aria-hidden />,
+    };
   };
 
-  const handleSelectPlan = async (planId: string) => {
+  const handleSelectPlan = async (planId: MembershipPlanId) => {
     setSelectedPlan(planId);
     setError("");
     setLoading(true);
@@ -274,40 +162,17 @@ export const SubscriptionPage: React.FC = () => {
         throw new Error("Stripe を読み込めませんでした。");
       }
 
-      const plan = plans.find((p) => p.id === planId);
-      if (!plan) {
-        throw new Error("プランを選び直してください。");
-      }
-
-      const planTypeMap: {
-        [key: string]:
-          | "monthly"
-          | "yearly"
-          | "monthlySpecial"
-          | "standard"
-          | "premium";
-      } = {
-        standard: "standard",
-        premium: "premium",
-      };
-
-      // Note: Stripe trials are disabled. Trials are only managed in the application code.
       const response = await paymentService.createCheckoutSession({
-        planType: planTypeMap[planId],
-        mode: "subscription",
+        planType: planId,
         successUrl: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/subscription`,
         metadata: {
           plan: planId,
         },
-        hasTrial: false,
       });
 
-      console.log("Checkout session response:", response);
-
-      // Handle checkout redirect FIRST (takes priority over direct change)
-      // When a checkout session is created (e.g. no payment method on file),
-      // the user must complete payment on Stripe before the change takes effect.
+      // Checkout redirect takes priority over a direct change: when a checkout
+      // session is created (e.g. no card on file), the user must pay on Stripe first.
       if (response.sessionId) {
         const result = await stripe.redirectToCheckout({
           sessionId: response.sessionId,
@@ -321,46 +186,31 @@ export const SubscriptionPage: React.FC = () => {
         return;
       }
 
-      // Handle direct upgrade/downgrade or pay now (no checkout needed)
+      // Direct plan switch (no checkout needed)
       if (response.upgraded || response.isPaidNow) {
-        // Refresh subscription status in Redux FIRST so the UI re-renders
         await dispatch(checkPayment());
-
         setLoading(false);
-
-        // The API message is in English, so show our own text.
-        showSuccessToast(
-          response.isPaidNow
-            ? "お支払いが済みました。サブスクリプションが有効になりました。"
-            : "プランを変更しました。",
-        );
-
+        showSuccessToast(response.message || "プランを切り替えました。");
         return;
       }
+
+      setLoading(false);
     } catch (err: any) {
       console.error("Checkout error:", err);
+      const conflictMessage =
+        err?.response?.status === 409
+          ? err.response.data?.error?.message
+          : null;
       setError(
-        "お支払いの手続きを始められませんでした。時間をおいて、もう一度お試しください。",
+        conflictMessage ||
+          "お支払いの手続きを始められませんでした。時間をおいて、もう一度お試しください。",
       );
       setLoading(false);
       setAutoCheckoutInProgress(false);
     }
   };
 
-  const formatPrice = (price: number, currency: string = "JPY") => {
-    return new Intl.NumberFormat("ja-JP", {
-      style: "currency",
-      currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const isDiscountActive = discountStatus?.isEligible ?? false;
-
-
-
-  if (loadingDiscount || autoCheckoutInProgress) {
+  if (autoCheckoutInProgress) {
     return (
       <Box
         role="status"
@@ -376,17 +226,14 @@ export const SubscriptionPage: React.FC = () => {
       >
         <CircularProgress />
         <Typography variant="body1" color="text.secondary">
-          {autoCheckoutInProgress
-            ? "お支払い画面を準備しています…"
-            : "読み込み中…"}
+          お支払い画面を準備しています…
         </Typography>
       </Box>
     );
   }
 
-  const statusLabel = (planId: string): string | null => {
-    if (currentPlan !== planId) return null;
-    if (isTrialing || isInFreeTrial) return "お試し中";
+  const statusLabel = (planId: MembershipPlanId): string | null => {
+    if (!hasSubscription || currentPlan !== planId) return null;
     if (status !== "active" && status !== "trialing") return "解約済み";
     return "利用中";
   };
@@ -452,16 +299,6 @@ export const SubscriptionPage: React.FC = () => {
           </Alert>
         )}
 
-        {isDiscountActive && discountStatus?.limit ? (
-          <Typography
-            variant="body2"
-            textAlign="center"
-            sx={{ mb: 4, color: colors.accentHover, fontWeight: 700 }}
-          >
-            割引価格は先着{discountStatus.limit}名までです。
-          </Typography>
-        ) : null}
-
         <Box
           sx={{
             display: "grid",
@@ -469,17 +306,13 @@ export const SubscriptionPage: React.FC = () => {
             gap: 3,
           }}
         >
-          {plans.map((plan) => {
+          {PLANS.map((plan) => {
             const buttonState = getButtonState(plan.id);
-            const isCurrentPlanCard = currentPlan === plan.id;
-            const currentPrice = isDiscountActive
-              ? plan.discountedPrice
-              : plan.regularPrice;
-            const showDiscount =
-              isDiscountActive && plan.discountedPrice < plan.regularPrice;
             const label = statusLabel(plan.id);
             const isBusy = loading && selectedPlan === plan.id;
-            const highlighted = isCurrentPlanCard || plan.recommended;
+            const highlighted = hasSubscription
+              ? currentPlan === plan.id
+              : Boolean(plan.badge);
 
             return (
               <Card
@@ -515,7 +348,7 @@ export const SubscriptionPage: React.FC = () => {
                     >
                       {plan.name}
                     </Typography>
-                    {(label || plan.recommended) && (
+                    {(label || plan.badge) && (
                       <Typography
                         variant="body2"
                         sx={{
@@ -524,21 +357,12 @@ export const SubscriptionPage: React.FC = () => {
                           flexShrink: 0,
                         }}
                       >
-                        {label || "おすすめ"}
+                        {label || plan.badge}
                       </Typography>
                     )}
                   </Stack>
 
                   <Box sx={{ mb: 3 }}>
-                    {showDiscount && (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ textDecoration: "line-through" }}
-                      >
-                        通常 {formatPrice(plan.regularPrice, plan.currency)}
-                      </Typography>
-                    )}
                     <Stack direction="row" alignItems="baseline" spacing={1}>
                       <Typography
                         component="p"
@@ -549,20 +373,12 @@ export const SubscriptionPage: React.FC = () => {
                           fontVariantNumeric: "tabular-nums",
                         }}
                       >
-                        {formatPrice(currentPrice, plan.currency)}
+                        {formatYen(plan.price)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        / 月
+                        {plan.periodLabel}（税込）
                       </Typography>
                     </Stack>
-                    {showDiscount && plan.savings ? (
-                      <Typography
-                        variant="body2"
-                        sx={{ color: colors.accentHover, fontWeight: 700 }}
-                      >
-                        通常より{plan.savings}%安くなります
-                      </Typography>
-                    ) : null}
                   </Box>
 
                   <Divider sx={{ mb: 2.5 }} />
@@ -572,31 +388,19 @@ export const SubscriptionPage: React.FC = () => {
                     spacing={1.25}
                     sx={{ listStyle: "none", p: 0, m: 0, mb: 4, flexGrow: 1 }}
                   >
-                    {plan.features.map((feature, featureIndex) => (
+                    {PLAN_FEATURES.map((feature) => (
                       <Stack
                         component="li"
-                        key={featureIndex}
+                        key={feature}
                         direction="row"
                         spacing={1}
                         alignItems="flex-start"
                       >
-                        {feature.included ? (
-                          <Check
-                            aria-hidden
-                            sx={{ color: colors.accent, fontSize: 20, mt: 0.4 }}
-                          />
-                        ) : (
-                          <Close
-                            aria-hidden
-                            sx={{ color: "text.secondary", fontSize: 20, mt: 0.4 }}
-                          />
-                        )}
-                        <Typography
-                          variant="body1"
-                          color={feature.included ? "text.primary" : "text.secondary"}
-                        >
-                          {feature.title}
-                        </Typography>
+                        <Check
+                          aria-hidden
+                          sx={{ color: colors.accent, fontSize: 20, mt: 0.4 }}
+                        />
+                        <Typography variant="body1">{feature}</Typography>
                       </Stack>
                     ))}
                   </Stack>

@@ -70,7 +70,7 @@ export class CheckUserSubscriptionUseCase {
                 hasSubscription: true,
                 hasAccessToCourses: true,
                 status: 'active',
-                currentPlan: 'premium',
+                currentPlan: subscription ? subscription.subscriptionPlan : null,
                 isTrialing: false,
                 isInFreeTrial: false,
                 freeTrialExpired: false,

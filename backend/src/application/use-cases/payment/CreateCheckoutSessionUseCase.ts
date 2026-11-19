@@ -3,7 +3,15 @@ import { ENV_CONFIG } from '../../../infrastructure/config/env.config';
 import { SubscriptionRepository } from '../../../infrastructure/database/repositories/SubscriptionRepository';
 import { PaymentService } from '../../../infrastructure/services/PaymentService';
 
+export type MembershipPlan = 'monthly' | 'yearly';
+
+export const PLAN_LABELS: Record<MembershipPlan, string> = {
+    monthly: '月額プラン',
+    yearly: '年額プラン',
+};
+
 export interface CreateCheckoutSessionRequest {
+    /** Ignored: membership checkout is always a subscription. Kept for request compatibility. */
     mode?: string;
     successUrl: string;
     cancelUrl: string;
@@ -15,7 +23,6 @@ export interface CreateCheckoutSessionRequest {
 
 export interface CreateCheckoutSessionResponse {
     sessionId?: string;
-    isDiscounted: boolean;
     isUpgrade?: boolean;
     isDowngrade?: boolean;
     upgraded?: boolean;
@@ -23,31 +30,19 @@ export interface CreateCheckoutSessionResponse {
     message?: string;
 }
 
+const badRequest = (message: string, statusCode = 400): Error =>
+    Object.assign(new Error(message), { statusCode });
+
 export class CreateCheckoutSessionUseCase {
-    private readonly DISCOUNT_LIMIT = Number(ENV_CONFIG.STRIPE_DISCOUNT_LIMIT_USERS);
-    private readonly DISCOUNT_PRICES = {
-        monthly: {
-            regular: ENV_CONFIG.STRIPE_MONTHLY_PRICE_ID || '',
-            discounted: ENV_CONFIG.STRIPE_MONTHLY_DISCOUNT_PRICE_ID || ''
-        },
-        yearly: {
-            regular: ENV_CONFIG.STRIPE_YEARLY_PRICE_ID || '',
-            discounted: ENV_CONFIG.STRIPE_YEARLY_DISCOUNT_PRICE_ID || ''
-        },
-        standard: {
-            regular: ENV_CONFIG.STRIPE_STANDARD_PRICE_ID || '',
-            discounted: ENV_CONFIG.STRIPE_STANDARD_DISCOUNT_PRICE_ID || ''
-        },
-        premium: {
-            regular: ENV_CONFIG.STRIPE_PREMIUM_PRICE_ID || '',
-            discounted: ENV_CONFIG.STRIPE_PREMIUM_DISCOUNT_PRICE_ID || '',
-        },
+    private readonly PRICE_IDS: Record<MembershipPlan, string> = {
+        monthly: ENV_CONFIG.STRIPE_MONTHLY_PRICE_ID || '',
+        yearly: ENV_CONFIG.STRIPE_YEARLY_PRICE_ID || '',
     };
 
-    // Define plan hierarchy for upgrade/downgrade logic
+    // Plan order for upgrade/downgrade (monthly → yearly is an upgrade)
     private readonly PLAN_HIERARCHY: Record<string, number> = {
-        standard: 1,
-        premium: 2,
+        monthly: 1,
+        yearly: 2,
     };
 
     constructor(
@@ -56,16 +51,15 @@ export class CreateCheckoutSessionUseCase {
     ) { }
 
     async execute(request: CreateCheckoutSessionRequest): Promise<CreateCheckoutSessionResponse> {
-        const { mode = 'subscription', successUrl, cancelUrl, metadata, planType, email, userId } = request;
+        const { successUrl, cancelUrl, metadata, planType, email, userId } = request;
 
-        // Validate planType
-        if (!planType) {
-            throw new Error('planType is required');
+        if (planType !== 'monthly' && planType !== 'yearly') {
+            throw badRequest('planType must be "monthly" or "yearly".');
         }
 
-        const validPlanTypes = Object.keys(this.DISCOUNT_PRICES);
-        if (!validPlanTypes.includes(planType)) {
-            throw new Error(`Invalid planType. Must be one of: ${validPlanTypes.join(', ')}`);
+        const priceId = this.PRICE_IDS[planType];
+        if (!priceId) {
+            throw new Error(`Price ID for plan "${planType}" is not configured.`);
         }
 
         // Check for existing subscription
@@ -95,112 +89,76 @@ export class CreateCheckoutSessionUseCase {
                 // Stripe subscription is gone or expired — sync DB status and fall through
                 // to new-subscription logic below
                 console.log(
-                    `⚠️ Subscription ${existingSubscription.stripeSubscriptionId} is no longer valid ` +
+                    `Subscription ${existingSubscription.stripeSubscriptionId} is no longer valid ` +
                     `(stripeStatus=${stripeStatus}, periodExpired=${isPeriodExpired}). ` +
                     `Treating as new subscription.`
                 );
 
-                // Update DB to reflect reality
                 if (!isStripeSubAlive && existingSubscription.status !== 'canceled') {
                     existingSubscription.status = 'canceled';
                     existingSubscription.updatedAt = new Date();
                     await this.subscriptionRepository.update(existingSubscription);
                 }
             } else {
-                // Subscription is genuinely active on Stripe — proceed with upgrade/downgrade
                 const currentPlan = existingSubscription.subscriptionPlan;
                 const isTrialing = existingSubscription.status === 'trialing';
                 const isSamePlan = currentPlan === planType;
 
-                // SCENARIO 1: Same plan + Trialing → "Pay Now" (end trial and activate)
+                // Same plan + trialing (only possible for old subscriptions) → end trial and start billing
                 if (isSamePlan && isTrialing) {
-                    return await this.handlePayNow({
-                        existingSubscription,
-                        userId,
-                    });
+                    return await this.handlePayNow({ existingSubscription });
                 }
 
-                // SCENARIO 2: Same plan + Active → Error (already subscribed)
-                if (isSamePlan && !isTrialing) {
-                    throw new Error(`You are already actively subscribed to the ${planType} plan.`);
+                // Same plan + active → already subscribed
+                if (isSamePlan) {
+                    throw badRequest(`すでに${PLAN_LABELS[planType]}に登録しています。`, 409);
                 }
 
-                // SCENARIO 3: Different plan → Upgrade or Downgrade
+                // Different plan → switch (monthly → yearly is an upgrade)
                 const currentHierarchy = this.PLAN_HIERARCHY[currentPlan] || 0;
-                const newHierarchy = this.PLAN_HIERARCHY[planType] || 0;
+                const newHierarchy = this.PLAN_HIERARCHY[planType];
 
-                if (newHierarchy > currentHierarchy) {
-                    // UPGRADE
-                    return await this.handlePlanChange({
-                        existingSubscription,
-                        newPlanType: planType,
-                        successUrl,
-                        cancelUrl,
-                        metadata,
-                        userId,
-                        isUpgrade: true,
-                    });
-                } else {
-                    // DOWNGRADE
-                    return await this.handlePlanChange({
-                        existingSubscription,
-                        newPlanType: planType,
-                        successUrl,
-                        cancelUrl,
-                        metadata,
-                        userId,
-                        isUpgrade: false,
-                    });
-                }
+                return await this.handlePlanChange({
+                    existingSubscription,
+                    newPlanType: planType,
+                    newPriceId: priceId,
+                    successUrl,
+                    cancelUrl,
+                    metadata,
+                    email,
+                    userId,
+                    isUpgrade: newHierarchy > currentHierarchy,
+                });
             }
         }
 
         // ========== NEW SUBSCRIPTION LOGIC ==========
-        const { isEligible } = await this.getDiscountStatus();
-
-        let finalPriceId = '';
-        if (isEligible && this.DISCOUNT_PRICES[planType as keyof typeof this.DISCOUNT_PRICES]) {
-            finalPriceId = this.DISCOUNT_PRICES[planType as keyof typeof this.DISCOUNT_PRICES].discounted;
-        } else if (this.DISCOUNT_PRICES[planType as keyof typeof this.DISCOUNT_PRICES]) {
-            finalPriceId = this.DISCOUNT_PRICES[planType as keyof typeof this.DISCOUNT_PRICES].regular;
-        }
-
-        if (!finalPriceId) {
-            throw new Error(`Price ID for plan "${planType}" is not configured.`);
-        }
-
-        const sessionData = {
-            priceId: finalPriceId,
-            mode: mode as 'payment' | 'subscription',
+        // No trial: billing starts at checkout (lesson 1 of each course is the free sample).
+        const session = await this.paymentService.createCheckoutSession({
+            priceId,
+            mode: 'subscription',
             successUrl,
             cancelUrl,
             metadata: {
                 ...metadata,
                 email,
                 userId,
-                isDiscounted: isEligible ? 'true' : 'false',
-                planType: planType || 'unknown',
+                planType,
             },
             customerId: existingSubscription?.stripeCustomerId || null,
-        };
-
-        const session = await this.paymentService.createCheckoutSession(sessionData);
+        });
 
         return {
             sessionId: session.id,
-            isDiscounted: isEligible,
             isUpgrade: false,
             isDowngrade: false,
         };
     }
 
     /**
-     * Handle "Pay Now" - End trial and activate subscription immediately
+     * End a (legacy) trial and activate billing immediately.
      */
-    private async handlePayNow(params: {
-        existingSubscription: any;
-        userId: string;
-    }): Promise<CreateCheckoutSessionResponse> {
+    private async handlePayNow(params: { existingSubscription: any }): Promise<CreateCheckoutSessionResponse> {
         const { existingSubscription } = params;
 
         try {
@@ -212,8 +170,7 @@ export class CreateCheckoutSessionUseCase {
                 throw new Error('Failed to activate subscription');
             }
 
-            // Immediately sync DB so checkPayment returns fresh data
-            // (don't wait for the webhook which may arrive later)
+            // Sync DB now so the status check returns fresh data before the webhook arrives
             existingSubscription.status = 'active';
             existingSubscription.currentPeriodStart = new Date(
                 updatedStripeSubscription.items.data[0].current_period_start * 1000
@@ -225,12 +182,11 @@ export class CreateCheckoutSessionUseCase {
             await this.subscriptionRepository.update(existingSubscription);
 
             return {
-                isDiscounted: false,
                 isUpgrade: false,
                 isDowngrade: false,
                 isPaidNow: true,
                 upgraded: true,
-                message: 'Your subscription is now active! Billing has started.',
+                message: 'プランを開始しました。',
             };
         } catch (error: any) {
             throw new Error(`Failed to activate subscription: ${error.message}`);
@@ -238,49 +194,37 @@ export class CreateCheckoutSessionUseCase {
     }
 
     /**
-     * Handle plan change (upgrade or downgrade)
+     * Switch between monthly and yearly.
      */
     private async handlePlanChange(params: {
         existingSubscription: any;
-        newPlanType: string;
+        newPlanType: MembershipPlan;
+        newPriceId: string;
         successUrl: string;
         cancelUrl: string;
         metadata?: any;
+        email: string;
         userId: string;
         isUpgrade: boolean;
     }): Promise<CreateCheckoutSessionResponse> {
-        const { existingSubscription, newPlanType, successUrl, cancelUrl, metadata, userId, isUpgrade } =
-            params;
+        const {
+            existingSubscription, newPlanType, newPriceId, successUrl, cancelUrl, metadata, email, userId, isUpgrade,
+        } = params;
 
-        const { isEligible } = await this.getDiscountStatus();
-
-        let newPriceId = '';
-        if (isEligible && this.DISCOUNT_PRICES[newPlanType as keyof typeof this.DISCOUNT_PRICES]) {
-            newPriceId = this.DISCOUNT_PRICES[newPlanType as keyof typeof this.DISCOUNT_PRICES].discounted;
-        } else if (this.DISCOUNT_PRICES[newPlanType as keyof typeof this.DISCOUNT_PRICES]) {
-            newPriceId = this.DISCOUNT_PRICES[newPlanType as keyof typeof this.DISCOUNT_PRICES].regular;
-        }
-
-        if (!newPriceId) {
-            throw new Error(`Price ID for plan "${newPlanType}" is not configured.`);
-        }
-
-        // Check if customer has a valid payment method
         const hasPaymentMethod = await this.paymentService.hasValidPaymentMethod(
             existingSubscription.stripeCustomerId
         );
 
-        // If on trial OR has payment method, do direct plan change
+        // With a saved card (or on a legacy trial), change the price on the existing subscription
         if (hasPaymentMethod || existingSubscription.status === 'trialing') {
             try {
                 const updatedStripeSubscription = await this.paymentService.upgradeSubscription({
                     subscriptionId: existingSubscription.stripeSubscriptionId,
-                    newPriceId: newPriceId,
+                    newPriceId,
                     prorationBehavior: 'create_prorations',
                 });
 
-                // Immediately sync DB so checkPayment returns fresh data
-                // (don't wait for the webhook which may arrive later)
+                // Sync DB now so the status check returns fresh data before the webhook arrives
                 existingSubscription.subscriptionPlan = newPlanType;
                 existingSubscription.status = updatedStripeSubscription.status === 'trialing' ? 'trialing' : 'active';
                 existingSubscription.currentPeriodStart = new Date(
@@ -292,19 +236,11 @@ export class CreateCheckoutSessionUseCase {
                 existingSubscription.updatedAt = new Date();
                 await this.subscriptionRepository.update(existingSubscription);
 
-                const actionWord = isUpgrade ? 'upgraded' : 'downgraded';
-                const trialMessage = existingSubscription.status === 'trialing'
-                    ? 'Your trial has ended and billing begins now.'
-                    : isUpgrade
-                        ? 'Your account has been prorated.'
-                        : 'You will receive a prorated credit.';
-
                 return {
-                    isDiscounted: false,
                     isUpgrade,
                     isDowngrade: !isUpgrade,
                     upgraded: true,
-                    message: `Successfully ${actionWord} to ${newPlanType}! ${trialMessage}`,
+                    message: `${PLAN_LABELS[newPlanType]}に切り替えました。使っていない期間の料金は日割りで差し引かれます。`,
                 };
             } catch (error: any) {
                 console.error('Direct plan change failed:', error.message);
@@ -312,16 +248,19 @@ export class CreateCheckoutSessionUseCase {
             }
         }
 
-        // If no payment method or direct change failed, create checkout session
+        // No saved card or the direct change failed → checkout for the new plan;
+        // the webhook cancels the previous subscription when it completes.
         const session = await this.paymentService.createUpgradeCheckoutSession({
             customerId: existingSubscription.stripeCustomerId,
             subscriptionId: existingSubscription.stripeSubscriptionId,
-            newPriceId: newPriceId,
+            newPriceId,
             successUrl,
             cancelUrl,
             metadata: {
                 ...metadata,
+                email,
                 userId,
+                planType: newPlanType,
                 newPlanType,
                 isUpgrade: isUpgrade ? 'true' : 'false',
                 isDowngrade: !isUpgrade ? 'true' : 'false',
@@ -332,24 +271,10 @@ export class CreateCheckoutSessionUseCase {
 
         return {
             sessionId: session.id,
-            isDiscounted: false,
             isUpgrade,
             isDowngrade: !isUpgrade,
             upgraded: false,
-            message: 'Payment method required. Please complete checkout.',
+            message: 'お支払い方法の入力が必要です。',
         };
-    }
-
-    private async getDiscountStatus(): Promise<{
-        isEligible: boolean;
-        remainingSpots: number;
-        totalUsed: number;
-    }> {
-        const allPayments = await this.subscriptionRepository.getAllAcivePayment();
-        const totalUsed = allPayments.length;
-        const remainingSpots = Math.max(0, this.DISCOUNT_LIMIT - totalUsed);
-        const isEligible = totalUsed < this.DISCOUNT_LIMIT;
-
-        return { isEligible, remainingSpots, totalUsed };
     }
 }

@@ -118,13 +118,13 @@ export class PaymentService implements IPaymentService {
       ],
       custom_text: {
         submit: {
-          message: 'Secure payment with Stripe. All transactions are encrypted and 100% secure.',
+          message: 'お支払いは Stripe で安全に処理されます。',
         },
       },
       mode: params.mode,
       success_url: params.successUrl,
       cancel_url: params.cancelUrl,
-      automatic_tax: { enabled: true },
+      automatic_tax: { enabled: ENV_CONFIG.STRIPE_AUTOMATIC_TAX },
       metadata: params.metadata,
     };
 
@@ -134,12 +134,7 @@ export class PaymentService implements IPaymentService {
       sessionConfig.customer_email = params.metadata?.email;
     }
 
-    // const trialDays = Number(ENV_CONFIG.STRIPE_FREE_DAYS) + 1;
-    // if (params.mode === 'subscription' && !params.customerId && params.metadata?.hasTrial !== false) {
-    //   sessionConfig.subscription_data = {
-    //     trial_end: this.daysToSecondsFromNow(trialDays),
-    //   };
-    // }
+    // No trial: subscription_data.trial_* is intentionally never set, so billing starts at checkout.
 
     const session = await this.stripe.checkout.sessions.create(sessionConfig);
     return session;
@@ -324,6 +319,9 @@ export class PaymentService implements IPaymentService {
       const session = await this.stripe.billingPortal.sessions.create({
         customer: customerId,
         return_url: returnUrl,
+        ...(ENV_CONFIG.STRIPE_PORTAL_CONFIGURATION_ID
+          ? { configuration: ENV_CONFIG.STRIPE_PORTAL_CONFIGURATION_ID }
+          : {}),
       });
       return session;
     } catch (error) {
@@ -345,13 +343,5 @@ export class PaymentService implements IPaymentService {
     } catch (error: any) {
       throw new Error(`Webhook signature verification failed: ${error.message}`);
     }
-  }
-
-  // ==================== Helper Methods ====================
-
-  private daysToSecondsFromNow(days: number): number {
-    const daysInSeconds = days * 24 * 60 * 60;
-    const nowInSeconds = Math.floor(Date.now() / 1000);
-    return daysInSeconds + nowInSeconds;
   }
 }

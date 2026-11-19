@@ -1,5 +1,6 @@
 import { PaymentService } from "../../../infrastructure/services/PaymentService";
 import { IUserRepository } from "../../../domain/repositories/IUserRepository";
+import { MembershipPlan, PLAN_LABELS } from "./CreateCheckoutSessionUseCase";
 
 export interface VerifyCheckoutSessionRequest {
     sessionId: string;
@@ -45,7 +46,8 @@ export class VerifyCheckoutSessionUseCase {
         }
 
         const planType = session.metadata?.planType || 'unknown_plan';
-        const planName = `Nipporia AI Academy ${planType.charAt(0).toUpperCase() + planType.slice(1)} Subscription`;
+        const planLabel = PLAN_LABELS[planType as MembershipPlan] || 'メンバーシップ';
+        const planName = `Nipporia AI Academy ${planLabel}`;
         const isTrial = session.total_details?.amount_tax === 0 && session.amount_total === 0;
 
         let finalValue = session.amount_total || 0;
@@ -101,7 +103,7 @@ export class VerifyCheckoutSessionUseCase {
                 subscriptionId: session.subscription as string || 'sub_pending',
                 customerId: session.customer as string || 'cus_guest',
                 isTrial: isTrial,
-                interval: session.metadata?.interval || 'monthly'
+                interval: planType === 'yearly' ? 'yearly' : 'monthly'
             },
             trialConversion: {
                 wasInFreeTrial,

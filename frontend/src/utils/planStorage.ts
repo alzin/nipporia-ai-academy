@@ -2,7 +2,7 @@
  * Valid plan types that can be stored in sessionStorage.
  * Update this array when new plans are added.
  */
-export const VALID_PLAN_TYPES = ['standard', 'premium'] as const;
+export const VALID_PLAN_TYPES = ['monthly', 'yearly'] as const;
 
 export type PlanType = (typeof VALID_PLAN_TYPES)[number];
 

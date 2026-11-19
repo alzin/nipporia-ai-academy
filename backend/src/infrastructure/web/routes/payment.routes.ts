@@ -17,7 +17,6 @@ const paymentRouter = (paymentController: PaymentController): Router => {
     router.post('/create-checkout-session', paymentController.createCheckoutSession.bind(paymentController));
     router.post('/verify-checkout-session', paymentController.verifyCheckoutSession.bind(paymentController));
     router.get('/create-customer-portal', paymentController.createCustomerPortal.bind(paymentController));
-    router.get('/discount-status', paymentController.checkDiscountEligibility.bind(paymentController));
 
     router.post('/end-trial', paymentController.endTrial.bind(paymentController));
 

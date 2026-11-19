@@ -23,8 +23,8 @@ import { AuthLayout } from "../components/layout/AuthLayout";
 import { useRegistrationFlowData } from "../utils/registrationFlow";
 
 const PLAN_LABELS: Record<string, string> = {
-  standard: "スタンダード",
-  premium: "プレミアム",
+  monthly: "月額",
+  yearly: "年額",
 };
 
 const toggleSx = { width: 44, height: 44 };

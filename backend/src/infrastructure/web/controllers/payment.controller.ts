@@ -7,7 +7,6 @@ import { CreatePaymentIntentUseCase } from '../../../application/use-cases/payme
 import { CreateCheckoutSessionUseCase } from '../../../application/use-cases/payment/CreateCheckoutSessionUseCase';
 import { VerifyCheckoutSessionUseCase } from '../../../application/use-cases/payment/VerifyCheckoutSessionUseCase';
 import { CreateCustomerPortalUseCase } from '../../../application/use-cases/payment/CreateCustomerPortalUseCase';
-import { CheckDiscountEligibilityUseCase } from '../../../application/use-cases/payment/CheckDiscountEligibilityUseCase';
 import { EndTrialUseCase } from '../../../application/use-cases/payment/EndTrialUseCase';
 import { HandleWebhookUseCase } from '../../../application/use-cases/payment/HandleWebhookUseCase';
 
@@ -17,7 +16,6 @@ export class PaymentController {
     private createCheckoutSessionUseCase: CreateCheckoutSessionUseCase,
     private verifyCheckoutSessionUseCase: VerifyCheckoutSessionUseCase,
     private createCustomerPortalUseCase: CreateCustomerPortalUseCase,
-    private checkDiscountEligibilityUseCase: CheckDiscountEligibilityUseCase,
     private endTrialUseCase: EndTrialUseCase,
     private handleWebhookUseCase: HandleWebhookUseCase
   ) { }
@@ -106,16 +104,6 @@ export class PaymentController {
           return;
         }
       }
-      next(error);
-    }
-  }
-
-  checkDiscountEligibility = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const result = await this.checkDiscountEligibilityUseCase.execute();
-
-      res.json(result);
-    } catch (error) {
       next(error);
     }
   }

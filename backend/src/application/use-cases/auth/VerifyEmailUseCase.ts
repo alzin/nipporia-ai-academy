@@ -46,9 +46,9 @@ export class VerifyEmailUseCase {
         user.exprirat = null; // Clear expiration
         user.updatedAt = new Date();
 
-        // Set up free trial (14 days) if not in paid flow
+        // Optional no-card free trial (FREE_TRIAL_DAYS, default 0 = no trial).
         // skipTrialSetup is true when user has pre-selected a plan
-        if (!dto.skipTrialSetup) {
+        if (!dto.skipTrialSetup && this.FREE_TRIAL_DAYS > 0) {
             const trialStartDate = new Date();
             const trialEndDate = new Date();
             trialEndDate.setDate(trialEndDate.getDate() + this.FREE_TRIAL_DAYS);
@@ -80,7 +80,7 @@ export class VerifyEmailUseCase {
             csrfToken,
             // Return trial info for frontend
             trialInfo: {
-                isInFreeTrial: !dto.skipTrialSetup && user.trialStartDate !== null,
+                isInFreeTrial: !dto.skipTrialSetup && this.FREE_TRIAL_DAYS > 0 && !!user.trialStartDate,
                 trialEndDate: user.trialEndDate,
             }
         };

@@ -20,17 +20,13 @@ export const ENV_CONFIG = {
     // Stripe Configuration
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
-    STRIPE_ONE_TIME_PRICE_ID: process.env.STRIPE_ONE_TIME_PRICE_ID,
+    // Two plans only: 月額プラン ¥4,980 and 年額プラン ¥49,800 (tax included)
     STRIPE_MONTHLY_PRICE_ID: process.env.STRIPE_MONTHLY_PRICE_ID,
     STRIPE_YEARLY_PRICE_ID: process.env.STRIPE_YEARLY_PRICE_ID,
-    STRIPE_MONTHLY_DISCOUNT_PRICE_ID: process.env.STRIPE_MONTHLY_DISCOUNT_PRICE_ID,
-    STRIPE_YEARLY_DISCOUNT_PRICE_ID: process.env.STRIPE_YEARLY_DISCOUNT_PRICE_ID,
-    STRIPE_FREE_DAYS: parseInt(process.env.STRIPE_FREE_DAYS!) || 14,
-    STRIPE_DISCOUNT_LIMIT_USERS: parseInt(process.env.STRIPE_DISCOUNT_LIMIT_USERS!) || 100,
-    STRIPE_STANDARD_PRICE_ID: process.env.STRIPE_STANDARD_PRICE_ID,
-    STRIPE_STANDARD_DISCOUNT_PRICE_ID: process.env.STRIPE_STANDARD_DISCOUNT_PRICE_ID,
-    STRIPE_PREMIUM_PRICE_ID: process.env.STRIPE_PREMIUM_PRICE_ID,
-    STRIPE_PREMIUM_DISCOUNT_PRICE_ID: process.env.STRIPE_PREMIUM_DISCOUNT_PRICE_ID,
+    // Customer portal configuration (bpc_...). Empty = the account's default portal settings.
+    STRIPE_PORTAL_CONFIGURATION_ID: process.env.STRIPE_PORTAL_CONFIGURATION_ID,
+    // Stripe Tax. Prices are tax-inclusive, so this stays off unless Stripe Tax is set up.
+    STRIPE_AUTOMATIC_TAX: process.env.STRIPE_AUTOMATIC_TAX === 'true',
 
     // Email Configuration
     EMAIL_HOST: process.env.EMAIL_HOST,
@@ -50,5 +46,6 @@ export const ENV_CONFIG = {
     BREVO_TRANSACTIONAL_LIST_ID: parseInt(process.env.BREVO_TRANSACTIONAL_LIST_ID || '2'),
     BREVO_MARKETING_LIST_ID: parseInt(process.env.BREVO_MARKETING_LIST_ID || '3'),
 
-    FREE_TRIAL_DAYS: parseInt(process.env.FREE_TRIAL_DAYS!) || 14,
+    // No-card free trial after email verification. 0 (default) = no trial.
+    FREE_TRIAL_DAYS: Math.max(0, parseInt(process.env.FREE_TRIAL_DAYS || '0', 10) || 0),
 };

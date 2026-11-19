@@ -13,6 +13,7 @@ import {
 import { CheckCircle, ErrorOutline, Home, School } from "@mui/icons-material";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
+import { getPlanName } from "../utils/plans";
 
 declare global {
   interface Window {
@@ -53,6 +54,7 @@ export const SubscriptionSuccessPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processed, setProcessed] = useState(false);
+  const [planName, setPlanName] = useState<string | null>(null);
 
   const sessionId = searchParams.get("session_id");
 
@@ -106,6 +108,8 @@ export const SubscriptionSuccessPage: React.FC = () => {
             metadata,
             isFirstEverPaid,
           } = response.data;
+
+          setPlanName(getPlanName(transactionDetails.plan));
 
           console.log("📊 GA4 Tracking Decision:", {
             isTrial: transactionDetails.isTrial,
@@ -322,7 +326,7 @@ export const SubscriptionSuccessPage: React.FC = () => {
               メンバー登録が済みました
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-              サブスクリプションが有効になりました。すべてのレッスンを見られます。コミュニティへの投稿もできます。
+              {planName ?? "サブスクリプション"}が有効になりました。すべてのレッスンを見られます。コミュニティへの投稿もできます。
             </Typography>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
