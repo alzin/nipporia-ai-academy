@@ -1,0 +1,165 @@
+import React, { useState, useEffect } from "react";
+import { Container, useTheme, useMediaQuery } from "@mui/material";
+import api from "../../services/api";
+// import { AddLessonDialog, CourseDetailHeader, LessonsList } from "../../components/admin-course-detail";
+import { CourseDetailHeader, AddLessonDialog, LessonsList} from "../../components/admin-course-detail";
+import { LessonFormState } from "../../types/lsesson-form.types";
+import { useParams } from "react-router-dom";
+import AdminNavigationButton from "../../components/admin/AdminNavigationButton";
+
+type StoredLesson = LessonFormState & {
+  id: string;
+  courseId: string;
+};
+
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  isActive: boolean;
+  lessonCount?: number;
+  freeLessonCount: number;
+  order?: number;
+}
+
+export const AdminCourseDetailPage: React.FC = () => {
+  const { courseId } = useParams<{ courseId: string }>();
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [lessons, setLessons] = useState<StoredLesson[]>([]);
+  const [isLessonsLoading, setIsLessonsLoading] = useState(false);
+  const [lessonDialog, setLessonDialog] = useState(false);
+  const [editingLesson, setEditingLesson] = useState<LessonFormState | null>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const [lessonForm, setLessonForm] = useState<LessonFormState>({
+    title: "",
+    description: "",
+    order: 1,
+    lessonType: "VIDEO",
+    contentUrl: "",
+    contentData: null,
+    requiresReflection: false,
+    passingScore: 70,
+    isFree: false,
+  });
+
+  const resetLessonForm = () => {
+    setLessonForm({
+      title: "",
+      description: "",
+      order: lessons.length + 1,
+      lessonType: "VIDEO",
+      contentUrl: "",
+      contentData: null,
+      requiresReflection: false,
+      passingScore: 70,
+      isFree: false,
+    });
+    setEditingLesson(null);
+  };
+
+  useEffect(() => {
+    fetchCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (selectedCourse) fetchLessons(selectedCourse.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCourse]);
+
+  useEffect(() => {
+    if (!selectedCourse) {
+      setLessons([]);
+      setLessonDialog(false);
+      resetLessonForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCourse]);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await api.get("/courses");
+      const sortedCourses: Course[] = response.data.sort((a: Course, b: Course) => {
+        if (a.order !== undefined && b.order !== undefined) {
+          return a.order - b.order;
+        }
+        return 0;
+      });
+      setSelectedCourse(sortedCourses.find((item) => item.id === courseId) || null);
+    } catch (error) {
+      console.error("Failed to fetch courses:", error);
+    }
+  };
+
+  const fetchLessons = async (courseId: string) => {
+    try {
+      setIsLessonsLoading(true);
+      const response = await api.get(`/courses/${courseId}/lessons`);
+      const mapped: StoredLesson[] = (response.data as any[]).map((l) => ({
+        id: l.id,
+        courseId: l.courseId ?? courseId,
+        title: l.title ?? "",
+        description: l.description ?? "",
+        order: l.order ?? 1,
+        lessonType: l.lessonType ?? "VIDEO",
+        contentUrl: l.contentUrl ?? "",
+        contentData: l.contentData ?? null,
+        requiresReflection: l.requiresReflection ?? false,
+        passingScore: l.passingScore ?? 70,
+        isFree: l.isFree ?? false,
+      }));
+      setLessons(mapped.sort((a, b) => a.order - b.order));
+    } catch (error) {
+      console.error("Failed to fetch lessons:", error);
+    } finally {
+      setIsLessonsLoading(false);
+    }
+  };
+
+  const handleAddNewLesson = () => {
+    resetLessonForm();
+    setLessonDialog(true);
+  };
+
+  return (
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <AdminNavigationButton titlePage="講座の詳細" />
+      <CourseDetailHeader
+        isMobile={isMobile}
+        selectedCourse={selectedCourse}
+        handleAddNewLesson={handleAddNewLesson}
+      />
+
+      <LessonsList
+        lessons={lessons}
+        isLoading={isLessonsLoading}
+        fetchLessons={fetchLessons}
+        selectedCourse={selectedCourse}
+        setLessons={setLessons}
+        setEditingLesson={setEditingLesson}
+        setLessonDialog={setLessonDialog}
+        setLessonForm={setLessonForm}
+      />
+
+      <AddLessonDialog
+        fetchCourses={fetchCourses}
+        fetchLessons={fetchLessons}
+        isMobile={isMobile}
+        lessonDialog={lessonDialog}
+        lessonForm={lessonForm}
+        lessons={lessons}
+        setLessonDialog={setLessonDialog}
+        setLessonForm={setLessonForm}
+        editingLesson={editingLesson}
+        selectedCourse={selectedCourse}
+        resetLessonForm={resetLessonForm}
+      />
+
+    </Container>
+  );
+};
+
+export default AdminCourseDetailPage;

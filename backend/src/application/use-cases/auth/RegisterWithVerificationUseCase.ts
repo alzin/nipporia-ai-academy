@@ -1,0 +1,124 @@
+// backend/src/application/use-cases/auth/RegisterWithVerificationUseCase.ts
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { User, UserRole } from '../../../domain/entities/User';
+import { IPasswordService } from '../../../domain/services/IPasswordService';
+import { IEmailService } from '../../../domain/services/IEmailService';
+import { IProfileRepository } from '../../../domain/repositories/IProfileRepository';
+import { IBrevoService } from '../../../domain/services/IBrevoService';
+import { Profile } from '../../../domain/entities/Profile';
+
+export interface RegisterWithVerificationDTO {
+    name: string;
+    email: string;
+    password: string;
+    marketingEmails?: boolean;
+}
+
+export class RegisterWithVerificationUseCase {
+    constructor(
+        private userRepository: IUserRepository,
+        private passwordService: IPasswordService,
+        private emailService: IEmailService,
+        private profileRepository: IProfileRepository,
+        private brevoService: IBrevoService
+    ) { }
+
+    async execute(dto: RegisterWithVerificationDTO): Promise<{ user: User; verificationCode: string }> {
+        // Check if user already exists
+        const existingUser = await this.userRepository.findByEmail(dto.email);
+
+        if (existingUser) {
+            const userProfile = await this.profileRepository.findByUserId(existingUser.id);
+            const isAddedToMarketingEmails = existingUser.marketingEmails;
+
+            if (existingUser.isverify) {
+                throw new Error('User already exists');
+            }
+
+            // User exists but not verified - update the existing user
+            const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+            const expirationDate = new Date();
+            expirationDate.setMinutes(expirationDate.getMinutes() + 10);
+
+            // Update the existing user with new verification code and expiration
+            existingUser.password = await this.passwordService.hash(dto.password);
+            existingUser.verificationCode = verificationCode;
+            existingUser.exprirat = expirationDate;
+            if (typeof dto.marketingEmails === 'boolean') {
+                existingUser.marketingEmails = dto.marketingEmails;
+            }
+            existingUser.updatedAt = new Date();
+
+            const updatedUser = await this.userRepository.update(existingUser);
+
+            if (!userProfile) {
+                throw new Error('Profile not found');
+            }
+
+            userProfile.name = dto.name.trim();
+            userProfile.updatedAt = new Date();
+
+            await this.profileRepository.update(userProfile);
+
+            // Send verification email
+            await this.emailService.sendVerificationCode(dto.email, verificationCode);
+
+            if (!isAddedToMarketingEmails) {
+                await this.brevoService.syncContactToLists(dto.email, dto.name, !!dto.marketingEmails);
+            }
+
+            return { user: updatedUser, verificationCode };
+        }
+
+        // Hash password for new user
+        const hashedPassword = await this.passwordService.hash(dto.password);
+
+        // Generate 6-digit verification code
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const expirationDate = new Date();
+        expirationDate.setMinutes(expirationDate.getMinutes() + 10);
+
+        // Create new user with isverify = false
+        // Trial dates are set to null initially - they will be set on email verification
+        const user = new User(
+            `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`,
+            dto.email.trim(),
+            hashedPassword,
+            UserRole.STUDENT,
+            true,
+            false, // isverify
+            verificationCode,
+            expirationDate,
+            false, // hasSeedTourVideo
+            dto.marketingEmails || false,
+            null, // trialStartDate - set on email verification
+            null, // trialEndDate - set on email verification
+            false, // trialConvertedToPaid
+            false, // hasEverPaid
+            new Date(),
+            new Date()
+        );
+
+        const savedUser = await this.userRepository.create(user);
+
+
+        const profile = new Profile(
+            `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`,
+            savedUser.id,
+            dto.name,
+            '',
+            new Date(),
+            new Date()
+        );
+
+        await this.profileRepository.create(profile);
+
+        // Send verification email
+        await this.emailService.sendVerificationCode(dto.email, verificationCode);
+
+        await this.brevoService.syncContactToLists(dto.email, dto.name, !!dto.marketingEmails);
+
+        return { user: savedUser, verificationCode };
+    }
+}

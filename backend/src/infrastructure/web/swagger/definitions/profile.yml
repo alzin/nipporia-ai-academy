@@ -1,0 +1,84 @@
+# src/infrastructure/web/swagger/definitions/profile.yml
+tags:
+- name: Profile
+  description: User profile management endpoints
+paths:
+  /profile/me:
+    get:
+      tags:
+      - Profile
+      summary: Get current user's profile
+      description: Retrieves the profile of the authenticated user
+      responses:
+        200:
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Profile not found
+    put:
+      tags:
+      - Profile
+      summary: Update current user's profile
+      description: Updates the profile information of the authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  example: John Doe
+                bio:
+                  type: string
+                  maxLength: 500
+                  example: Example text
+      responses:
+        200:
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Profile not found

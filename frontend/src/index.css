@@ -1,0 +1,95 @@
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-feature-settings: "palt";
+}
+
+p, li {
+  line-break: strict;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* SweetAlert2 */
+.swal2-popup,
+.swal2-title,
+.swal2-html-container {
+  font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", sans-serif !important;
+  font-feature-settings: "palt";
+}
+
+.sweet-alert-popup {
+  background: #FFFDF9 !important;
+  border: 1px solid #E3DDD2 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px -24px rgba(60, 40, 20, 0.35) !important;
+}
+
+.sweet-alert-title {
+  font-weight: 700 !important;
+  color: #23211D !important;
+  font-size: 1.25rem !important;
+}
+
+.swal2-html-container {
+  color: #5F5B54 !important;
+  line-height: 1.75 !important;
+}
+
+.sweet-alert-confirm,
+.sweet-alert-cancel {
+  min-height: 44px !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  padding: 0 22px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.sweet-alert-confirm {
+  background-color: #AE4A24 !important;
+}
+
+.sweet-alert-confirm:hover {
+  background-color: #8F3B1B !important;
+}
+
+.sweet-alert-cancel {
+  background-color: #5F5B54 !important;
+}
+
+.sweet-alert-cancel:hover {
+  background-color: #23211D !important;
+}
+
+.swal2-styled:focus-visible {
+  outline: 3px solid #3C5A80 !important;
+  outline-offset: 2px !important;
+}
+
+.nipporia-toast {
+  background: #FFFDF9 !important;
+  border: 1px solid #E3DDD2 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 12px 28px -18px rgba(60, 40, 20, 0.35) !important;
+}
+
+.nipporia-toast-title {
+  color: #23211D !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+}

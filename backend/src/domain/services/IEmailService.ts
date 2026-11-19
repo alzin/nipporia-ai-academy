@@ -1,0 +1,6 @@
+export interface IEmailService {
+  sendWelcomeEmail(email: string, temporaryPassword: string): Promise<void>;
+  sendWelcomeEmailWithoutPassword(email: string, name: string): Promise<void>;
+  sendPasswordResetEmail(email: string, resetToken: string): Promise<void>;
+  sendVerificationCode(email: string, code: string): Promise<void>;
+}

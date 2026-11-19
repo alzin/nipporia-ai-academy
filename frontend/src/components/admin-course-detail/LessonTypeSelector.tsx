@@ -1,0 +1,58 @@
+import React from "react";
+import { Controller, Control } from "react-hook-form";
+import {
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Stack,
+  Typography,
+} from "@mui/material";
+import {
+  PictureAsPdf,
+  Slideshow,
+  VideoLibrary as VideoIcon,
+  Quiz as QuizIcon,
+} from "@mui/icons-material";
+import { LessonFormState, LessonType } from "../../types/lsesson-form.types";
+
+interface LessonTypeSelectorProps {
+  control: Control<LessonFormState>;
+}
+
+export const LessonTypeSelector: React.FC<LessonTypeSelectorProps> = ({ control }) => {
+  const lessonTypeOptions: { value: LessonType; label: string; icon: React.ReactNode }[] = [
+    { value: "VIDEO", label: "動画", icon: <VideoIcon /> },
+    { value: "PDF", label: "PDF", icon: <PictureAsPdf /> },
+    { value: "QUIZ", label: "クイズ", icon: <QuizIcon /> },
+    { value: "SLIDES", label: "スライド", icon: <Slideshow /> },
+  ];
+
+  return (
+    <FormControl>
+      <FormLabel>レッスンの種類</FormLabel>
+      <Controller
+        name="lessonType"
+        control={control}
+        render={({ field }) => (
+          <RadioGroup {...field} row>
+            {lessonTypeOptions.map((option) => (
+              <FormControlLabel
+                key={option.value}
+                value={option.value}
+                control={<Radio />}
+                label={
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    {option.icon}
+                    <Typography>{option.label}</Typography>
+                  </Stack>
+                }
+              />
+            ))}
+          </RadioGroup>
+        )}
+      />
+    </FormControl>
+  );
+};

@@ -1,0 +1,159 @@
+import { Router } from 'express';
+import { body } from 'express-validator';
+import multer from 'multer';
+import { CommunityController } from '../controllers/community.controller';
+import { authenticate, optionalAuthenticate, requireActiveSubscription } from '../middleware/auth.middleware';
+import { validateRequest } from '../middleware/validateRequest';
+
+const communityRouter = (communityController: CommunityController): Router => {
+  const router = Router();
+
+
+  // Configure multer for media uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 100 * 1024 * 1024, // 100MB max file size
+      files: 10, // Maximum 10 files at once
+    },
+    fileFilter: (req, file, cb) => {
+      // Allowed file types
+      const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const allowedVideoTypes = ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/webm', 'video/x-msvideo'];
+      const allowedAudioTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/webm', 'audio/mp4', 'audio/x-m4a'];
+      const allowedTypes = [...allowedImageTypes, ...allowedVideoTypes, ...allowedAudioTypes];
+
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error(`Invalid file type: ${file.mimetype}. Allowed types: ${allowedTypes.join(', ')}`));
+      }
+    },
+  });
+
+  const member = [authenticate, requireActiveSubscription];
+
+  // Media upload routes
+  router.post(
+    '/upload-media',
+    ...member,
+    upload.array('media', 10), // Accept up to 10 files with field name 'media'
+    communityController.uploadMedia.bind(communityController)
+  );
+
+  router.delete(
+    '/delete-media',
+    ...member,
+    [
+      body('mediaUrls')
+        .isArray()
+        .withMessage('Media URLs must be an array')
+        .notEmpty()
+        .withMessage('Media URLs array cannot be empty')
+    ],
+    validateRequest,
+    communityController.deleteMedia.bind(communityController)
+  );
+
+  // Post routes
+  router.post(
+    '/posts',
+    ...member,
+    [
+      body('content').notEmpty().trim(),
+      body('mediaUrls').optional().isArray(),
+      body('isAnnouncement').optional().isBoolean()
+    ],
+    validateRequest,
+    communityController.createPost.bind(communityController)
+  );
+
+  router.get(
+    '/posts',
+    optionalAuthenticate,
+    communityController.getPosts.bind(communityController));
+
+  router.post(
+    '/posts/:postId/toggle-like',
+    ...member,
+    communityController.toggleLike.bind(communityController));
+
+  router.put(
+    '/posts/:postId',
+    ...member,
+    [
+      body('content').notEmpty().trim(),
+      body('mediaUrls').optional().isArray(),
+      body('removedMediaUrls').optional().isArray()
+    ],
+    validateRequest,
+    communityController.editPost.bind(communityController)
+  );
+
+  router.delete(
+    '/posts/:postId',
+    ...member,
+    communityController.deletePost.bind(communityController));
+
+  // Comment routes - All moved to community controller
+  router.get(
+    '/posts/:postId/comments',
+    optionalAuthenticate,
+    communityController.getCommentsByPost.bind(communityController));
+
+  router.get(
+    '/posts/:postId/comments/count',
+    optionalAuthenticate,
+    communityController.getCommentCount.bind(communityController));
+
+  router.post(
+    '/posts/:postId/comments',
+    ...member,
+    [
+      body('content')
+        .notEmpty()
+        .trim()
+        .isLength({ min: 1 })
+        .withMessage('Comment content must be at least 1 character'),
+      body('parentCommentId')
+        .optional()
+        .isString()
+        .withMessage('Parent comment ID must be a string')
+    ],
+    validateRequest,
+    communityController.createComment.bind(communityController)
+  );
+
+  router.get(
+    '/comments/:commentId',
+    optionalAuthenticate,
+    communityController.getCommentById.bind(communityController));
+
+  router.put(
+    '/comments/:commentId',
+    ...member,
+    [
+      body('content')
+        .notEmpty()
+        .trim()
+        .isLength({ min: 1 })
+        .withMessage('Comment content must be at least 1 character'),
+    ],
+    validateRequest,
+    communityController.updateComment.bind(communityController)
+  );
+
+  router.delete(
+    '/comments/:commentId',
+    ...member,
+    communityController.deleteComment.bind(communityController));
+
+  router.get(
+    '/comments/:commentId/replies',
+    optionalAuthenticate,
+    communityController.getReplies.bind(communityController));
+
+  return router;
+};
+
+export default communityRouter;

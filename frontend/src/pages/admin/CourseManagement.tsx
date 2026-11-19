@@ -1,0 +1,554 @@
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
+  Stack,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Switch,
+  FormControlLabel,
+  Skeleton
+} from "@mui/material";
+import {
+  Add,
+  Delete,
+  DragIndicator,
+} from "@mui/icons-material";
+import { motion } from "framer-motion";
+import api from "../../services/api";
+import AdminNavigationButton from "../../components/admin/AdminNavigationButton";
+
+import { useNavigate } from "react-router-dom";
+
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  isActive: boolean;
+  lessonCount?: number;
+  freeLessonCount: number;
+  order?: number;
+}
+
+interface Lesson {
+  id: string;
+  courseId: string;
+  title: string;
+  description: string;
+  order: number;
+  contentUrl?: string;
+  contentData?: any;
+  lessonType: "VIDEO" | "PDF" | "QUIZ" | "SLIDES";
+  requiresReflection: boolean;
+  passingScore?: number;
+}
+
+
+export const CourseManagement: React.FC = () => {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
+  const navigate = useNavigate();
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [, setLessons] = useState<Lesson[]>([]);
+  const [courseDialog, setCourseDialog] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+
+
+
+  // Drag and drop state for courses
+  const [draggedCourse, setDraggedCourse] = useState<Course | null>(null);
+  const [dragOverCourseIndex, setDragOverCourseIndex] = useState<number | null>(null);
+
+  const [courseForm, setCourseForm] = useState<{
+    title: string;
+    description: string;
+    icon: string;
+    isActive: boolean;
+    freeLessonCount: number;
+  }>({
+    title: "",
+    description: "",
+    icon: "📘",
+    isActive: true,
+    freeLessonCount: 2,
+  });
+
+  // Course Drag and Drop handlers
+  const handleCourseDragStart = (e: React.DragEvent<HTMLDivElement>, course: Course) => {
+    setDraggedCourse(course);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/html", "");
+
+    if (e.currentTarget) {
+      e.currentTarget.style.opacity = "0.5";
+    }
+  };
+
+  const handleCourseDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+    setDraggedCourse(null);
+    setDragOverCourseIndex(null);
+
+    if (e.currentTarget) {
+      e.currentTarget.style.opacity = "1";
+    }
+  };
+
+  const handleCourseDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverCourseIndex(index);
+  };
+
+  const handleCourseDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      setDragOverCourseIndex(null);
+    }
+  };
+
+  const handleCourseDrop = async (e: React.DragEvent<HTMLDivElement>, dropIndex: number) => {
+    e.preventDefault();
+
+    if (!draggedCourse) return;
+
+    const dragIndex = courses.findIndex(course => course.id === draggedCourse.id);
+
+    if (dragIndex === dropIndex) {
+      setDraggedCourse(null);
+      setDragOverCourseIndex(null);
+      return;
+    }
+
+    // Create new array with reordered courses
+    const newCourses = [...courses];
+    const [draggedItem] = newCourses.splice(dragIndex, 1);
+    newCourses.splice(dropIndex, 0, draggedItem);
+
+    // Update order numbers
+    const reorderedCourses = newCourses.map((course, index) => ({
+      ...course,
+      order: index + 1
+    }));
+
+    // Optimistically update UI
+    setCourses(reorderedCourses);
+    setDraggedCourse(null);
+    setDragOverCourseIndex(null);
+
+    try {
+      // Update all affected courses in the backend
+      const updatePromises = reorderedCourses.map(course =>
+        api.put(`/admin/courses/${course.id}`, {
+          ...course,
+          order: course.order
+        })
+      );
+
+      await Promise.all(updatePromises);
+    } catch (error) {
+      console.error("Failed to reorder courses:", error);
+      // Revert on error
+      fetchCourses();
+      alert("並び順を保存できませんでした。もう一度お試しください。");
+    }
+  };
+
+
+
+  // Helper functions (existing code)
+  const resetCourseForm = () => {
+    setCourseForm({
+      title: "",
+      description: "",
+      icon: "📘",
+      isActive: true,
+      freeLessonCount: 2,
+    });
+    setEditingCourse(null);
+  };
+
+
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCourse) {
+      fetchLessons(selectedCourse.id);
+    }
+  }, [selectedCourse]);
+
+  const fetchCourses = async () => {
+    setCoursesLoading(true);
+    try {
+      const response = await api.get("/courses");
+      // Sort courses by order if they have it, otherwise by creation date
+      const sortedCourses = response.data.sort((a: Course, b: Course) => {
+        if (a.order !== undefined && b.order !== undefined) {
+          return a.order - b.order;
+        }
+        return 0;
+      });
+      setCourses(sortedCourses);
+    } catch (error) {
+      console.error("Failed to fetch courses:", error);
+    } finally {
+      setCoursesLoading(false);
+    }
+  };
+
+  const fetchLessons = async (courseId: string) => {
+    try {
+      const response = await api.get(`/courses/${courseId}/lessons`);
+      const sortedLessons = response.data.sort((a: Lesson, b: Lesson) => a.order - b.order);
+      setLessons(sortedLessons);
+    } catch (error) {
+      console.error("Failed to fetch lessons:", error);
+    }
+  };
+
+  const handleSaveCourse = async () => {
+    try {
+      const payload = { ...courseForm };
+      if (editingCourse) {
+        await api.put(`/admin/courses/${editingCourse.id}`, payload);
+      } else {
+        await api.post("/admin/courses", payload);
+      }
+      setCourseDialog(false);
+      resetCourseForm();
+      fetchCourses();
+    } catch (error) {
+      console.error("Failed to save course:", error);
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    if (window.confirm("この講座を削除しますか？この操作は元に戻せません。")) {
+      try {
+        await api.delete(`/admin/courses/${courseId}`);
+        fetchCourses();
+      } catch (error) {
+        console.error("Failed to delete course:", error);
+      }
+    }
+  };
+
+  const handleCloseCourseDialog = () => {
+    setCourseDialog(false);
+    resetCourseForm();
+  };
+
+  const handleAddNewCourse = () => {
+    resetCourseForm();
+    setCourseDialog(true);
+  };
+
+
+
+
+  // Course list view with drag and drop
+  return (
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={1}
+      >
+        <AdminNavigationButton titlePage="講座の管理" />
+      </Stack>
+
+      <Stack direction="row" justifyContent="flex-end" mb={2}>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={handleAddNewCourse}
+        >
+          新しい講座
+        </Button>
+      </Stack>
+
+      <Grid container spacing={3}>
+        {coursesLoading &&
+          Array.from({ length: 6 }).map((_, index) => (
+            <Grid
+              size={{ xs: 12, md: 4 }}
+              key={`course-skeleton-${index}`}
+              sx={{ display: "flex" }}
+            >
+              <Card sx={{ display: "flex", flexDirection: "column", width: "100%", height: "100%" }}>
+                <Skeleton variant="rectangular" height={120} />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Skeleton variant="text" width="70%" height={36} />
+                  <Skeleton variant="text" width="100%" />
+                  <Skeleton variant="text" width="90%" />
+                  <Skeleton variant="text" width="35%" sx={{ mt: 1 }} />
+                </CardContent>
+                <CardActions>
+                  <Skeleton variant="rounded" width={100} height={32} />
+                  <Skeleton variant="rounded" width={64} height={32} />
+                  <Skeleton variant="circular" width={32} height={32} />
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        {!coursesLoading && courses.map((course, index) => (
+          <Grid
+            size={{ xs: 12, md: 4 }}
+            key={course.id}
+            sx={{ display: "flex" }}
+            draggable
+            onDragStart={(e) => handleCourseDragStart(e, course)}
+            onDragEnd={handleCourseDragEnd}
+            onDragOver={(e) => handleCourseDragOver(e, index)}
+            onDragLeave={handleCourseDragLeave}
+            onDrop={(e) => handleCourseDrop(e, index)}
+          >
+            <motion.div
+              whileHover={{ y: -4 }}
+              style={{
+                cursor: 'grab',
+                transition: 'all 0.2s ease',
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                transform: dragOverCourseIndex === index && draggedCourse?.id !== course.id
+                  ? 'translateY(-8px)'
+                  : 'none',
+                opacity: draggedCourse?.id === course.id ? 0.5 : 1,
+              }}
+            >
+              <Card
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative',
+                  boxShadow: dragOverCourseIndex === index && draggedCourse?.id !== course.id
+                    ? 4
+                    : 1,
+                  border: dragOverCourseIndex === index && draggedCourse?.id !== course.id
+                    ? '2px solid'
+                    : 'none',
+                  borderColor: 'primary.main',
+                  '&:active': {
+                    cursor: 'grabbing',
+                    minHeight: "100%"
+                  }
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 10,
+                    left: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    zIndex: 1,
+                    bgcolor: 'background.paper',
+                    borderRadius: 1,
+                    padding: '2px 8px',
+                  }}
+                >
+                  <DragIndicator sx={{ fontSize: 20, color: 'action.active' }} />
+                  <Typography variant="caption" fontWeight={600}>
+                    #{course.order || index + 1}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    height: 120,
+                    bgcolor: "#F8E6DD",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "3rem",
+                  }}
+                >
+                  {course.icon}
+                </Box>
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="start"
+                    mb={2}
+                  >
+                    <Typography
+                      variant="h6"
+                      fontWeight={600}
+                      sx={{
+                        lineHeight: 1.6,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {course.title}
+                    </Typography>
+                    <Chip
+                      label={course.isActive ? "公開中" : "非公開"}
+                      size="small"
+                      color={course.isActive ? "success" : "default"}
+                      sx={{ flexShrink: 0, ml: 1 }}
+                    />
+                  </Stack>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      mb: 2,
+                      lineHeight: 1.6,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {course.description}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    レッスン {course.lessonCount || 0}本
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ mt: "auto" }}>
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setSelectedCourse(course)
+                      navigate(`/admin/courses/${course.id}`)
+                    }}
+                  >
+                    レッスンを管理
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setEditingCourse(course);
+                      setCourseForm({
+                        title: course.title,
+                        description: course.description,
+                        icon: course.icon,
+                        isActive: course.isActive,
+                        freeLessonCount: course.freeLessonCount,
+                      });
+                      setCourseDialog(true);
+                    }}
+                  >
+                    編集
+                  </Button>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    aria-label="講座を削除"
+                    onClick={() => handleDeleteCourse(course.id)}
+                  >
+                    <Delete />
+                  </IconButton>
+                </CardActions>
+              </Card>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Course Dialog */}
+      <Dialog
+        open={courseDialog}
+        onClose={handleCloseCourseDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {editingCourse ? "講座を編集" : "新しい講座"}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ pt: 2 }}>
+            <TextField
+              fullWidth
+              label="講座名"
+              value={courseForm.title}
+              onChange={(e) =>
+                setCourseForm({ ...courseForm, title: e.target.value })
+              }
+            />
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="説明"
+              value={courseForm.description}
+              onChange={(e) =>
+                setCourseForm({ ...courseForm, description: e.target.value })
+              }
+            />
+            <TextField
+              fullWidth
+              label="アイコン（絵文字）"
+              value={courseForm.icon}
+              onChange={(e) =>
+                setCourseForm({ ...courseForm, icon: e.target.value })
+              }
+              helperText="講座の一覧に表示する絵文字を1つ入力してください"
+            />
+            <TextField
+              fullWidth
+              required
+              type="number"
+              label="無料で見られるレッスン数"
+              helperText="並び順で最初のこの数のレッスンは、だれでも見られます"
+              value={courseForm.freeLessonCount}
+              onWheel={(e) => (e.target as HTMLInputElement).blur()}
+              onChange={(e) =>
+                setCourseForm({
+                  ...courseForm,
+                  freeLessonCount: parseInt(e.target.value),
+                })
+              }
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={courseForm.isActive}
+                  onChange={(e) =>
+                    setCourseForm({ ...courseForm, isActive: e.target.checked })
+                  }
+                />
+              }
+              label="公開する"
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCourseDialog}>キャンセル</Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveCourse}
+          >
+            保存
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
+  );
+};
