@@ -19,6 +19,7 @@ import feedbackRouter from './routes/feedback.routes';
 import activityRouter from './routes/activity.routes';
 import announcementRouter from './routes/announcement.routes';
 import videoRouter from './routes/video.routes';
+import mediaRouter from './routes/media.routes';
 
 import { setupDependencies, DependencyContainer } from './dependencies';
 import { setupSwagger } from './swagger/swagger.setup';
@@ -89,6 +90,7 @@ export class Server {
     this.app.use('/api/activities', activityRouter(this.dependencies.controllers.activity));
     this.app.use('/api/announcements', announcementRouter(this.dependencies.controllers.announcement));
     this.app.use('/api/videos', videoRouter(this.dependencies.controllers.video));
+    this.app.use('/api/media', mediaRouter(this.dependencies.controllers.media));
     this.app.use('/api/feedback', feedbackRouter(this.dependencies.controllers.feedback));
 
     // Health check

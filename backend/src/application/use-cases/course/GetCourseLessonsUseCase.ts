@@ -37,7 +37,8 @@ export class GetCourseLessonsUseCase {
                 lesson,
                 course,
                 hasFullAccess,
-                progress.find(p => p.lessonId === lesson.id)
+                progress.find(p => p.lessonId === lesson.id),
+                userRole
             )
         );
     }

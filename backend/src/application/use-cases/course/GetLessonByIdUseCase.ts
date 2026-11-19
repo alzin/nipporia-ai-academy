@@ -36,6 +36,6 @@ export class GetLessonByIdUseCase {
             : null;
         const hasFullAccess = await this.lessonAccessService.hasFullAccess({ userId, role: userRole });
 
-        return toLessonView(lesson, course, hasFullAccess, progress);
+        return toLessonView(lesson, course, hasFullAccess, progress, userRole);
     }
 }

@@ -45,6 +45,18 @@ Subscriptions are saved only from webhooks (`/api/payment/webhook`). Locally, ei
 
 In production, add a webhook endpoint in the Stripe dashboard for `checkout.session.completed`, `customer.subscription.created/updated/deleted` and `invoice.payment_succeeded/failed`, and use its signing secret.
 
+## Protected lesson videos
+
+Lesson videos in the S3 bucket are never sent to the browser as a file link (only admins see the link, in the edit form). They are played as AES-128 encrypted HLS:
+
+- `GET /api/media/lessons/:id/stream` checks the viewer like the lesson page does (free lesson, member or admin) and returns a playlist link that works for 2 minutes.
+- The playlist's decryption key is served by the API through another 2-minute link. The video pieces are presigned S3 links, but they are encrypted and can't be played on their own.
+- The bucket stays private: the original MP4 URL returns 403.
+
+After uploading or replacing a lesson video, run `npm run video:hls` in `backend` (needs ffmpeg). It converts new or changed videos and skips the rest; `-- --force` re-encrypts everything with new keys. Until a video is converted, the player falls back to a 15-minute MP4 link.
+
+This stops copied links and the browser's download button. It can't stop someone who is allowed to watch from recording their screen; only paid DRM (Widevine / FairPlay, e.g. through a video host) makes that harder.
+
 ## Seeding the course
 
 `npm run seed:claude-code -- <folder>` uploads the lesson videos (`<folder>/lesson-NN/out/video.mp4`) and creates the 「Claude Code 入門」 course (needs `ADMIN_EMAIL` and `ADMIN_PASSWORD`).

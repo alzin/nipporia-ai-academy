@@ -6,6 +6,7 @@ import { Lesson } from '../../domain/entities/Lesson';
 import { Course } from '../../domain/entities/Course';
 import { Progress } from '../../domain/entities/Progress';
 import { CheckUserSubscriptionUseCase } from '../use-cases/subscription/CheckUserSubscriptionUseCase';
+import { isBucketVideoUrl } from '../../infrastructure/services/LessonMediaService';
 
 export interface Viewer {
     userId?: string;
@@ -35,6 +36,8 @@ export interface UnlockedLessonView {
     isFree: boolean;
     isLocked: false;
     contentUrl?: string;
+    /** The video is in our bucket: play it through /api/media/lessons/:id/stream. */
+    hasProtectedVideo?: boolean;
     contentData?: any;
     audioFiles: string[];
     resources: string[];
@@ -61,18 +64,22 @@ export function isLessonLocked(lesson: Lesson, course: Course | null, hasFullAcc
 
 /**
  * Shape a lesson for the API. Locked lessons never include contentUrl,
- * contentData, audioFiles or resources.
+ * contentData, audioFiles or resources. Videos stored in our bucket never expose
+ * their file URL either (only ADMIN gets it, for the edit form); the player asks
+ * /api/media for an encrypted stream instead.
  */
 export function toLessonView(
     lesson: Lesson,
     course: Course | null,
     hasFullAccess: boolean,
-    progress?: Progress | null
+    progress?: Progress | null,
+    viewerRole?: string
 ): LessonView {
     const isFree = isLessonFree(lesson, course);
     const locked = !hasFullAccess && !isFree;
     const isCompleted = progress?.isCompleted || false;
     const completedAt = progress?.completedAt;
+    const protectedVideo = lesson.lessonType === 'VIDEO' && isBucketVideoUrl(lesson.contentUrl);
 
     if (locked) {
         return {
@@ -98,7 +105,8 @@ export function toLessonView(
         lessonType: lesson.lessonType,
         isFree,
         isLocked: false,
-        contentUrl: lesson.contentUrl,
+        contentUrl: protectedVideo && viewerRole !== 'ADMIN' ? undefined : lesson.contentUrl,
+        hasProtectedVideo: protectedVideo || undefined,
         contentData: lesson.contentData,
         audioFiles: lesson.audioFiles,
         resources: lesson.resources,

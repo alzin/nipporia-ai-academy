@@ -126,6 +126,8 @@ import { CompleteLessonUseCase } from "../../../application/use-cases/course/Com
 
 // Lesson access (shared lock rule)
 import { LessonAccessService } from "../../../application/services/LessonAccessService";
+import { LessonMediaService } from "../../services/LessonMediaService";
+import { MediaController } from "../controllers/media.controller";
 
 // Dashboard Use Cases
 import { GetDashboardDataUseCase } from "../../../application/use-cases/dashboard/GetDashboardDataUseCase";
@@ -368,6 +370,7 @@ export interface DependencyContainer {
         profile: ProfileController;
         subscription: SubscriptionController;
         video: VideoController;
+        media: MediaController;
     };
 }
 
@@ -417,6 +420,7 @@ export const setupDependencies = (): DependencyContainer => {
         repositories.user
     );
     const lessonAccess = new LessonAccessService(checkUserSubscription);
+    const lessonMedia = new LessonMediaService();
 
     // ========== Initialize Use Cases ==========
     const useCases = {
@@ -995,6 +999,12 @@ export const setupDependencies = (): DependencyContainer => {
             useCases.deleteVideo,
             useCases.checkTourVideoStatus,
             useCases.markTourVideoViewed,
+        ),
+        media: new MediaController(
+            repositories.lesson,
+            repositories.course,
+            lessonAccess,
+            lessonMedia,
         ),
     };
 

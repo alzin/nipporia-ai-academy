@@ -18,6 +18,8 @@ export interface Lesson {
   order: number;
   lessonType: LessonType;
   contentUrl?: string;
+  /** Video stored on our servers: played as an encrypted stream via /media (no file URL is sent). */
+  hasProtectedVideo?: boolean;
   contentData?: any;
   requiresReflection?: boolean;
   passingScore?: number;

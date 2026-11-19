@@ -58,7 +58,9 @@ export const LessonContentRenderer: React.FC<Props> = ({
   ) {
     return (
       <>
-        {selectedLesson.contentUrl ? (
+        {selectedLesson.lessonType === "VIDEO" && selectedLesson.hasProtectedVideo ? (
+          <VideoPlayer lessonId={selectedLesson.id} />
+        ) : selectedLesson.contentUrl ? (
           selectedLesson.lessonType === "VIDEO" ? (
             <VideoPlayer url={selectedLesson.contentUrl} />
           ) : selectedLesson.contentUrl ? (
