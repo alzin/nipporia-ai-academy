@@ -59,4 +59,4 @@ This stops copied links and the browser's download button. It can't stop someone
 
 ## Seeding the course
 
-`npm run seed:claude-code -- <folder>` uploads the lesson videos (`<folder>/lesson-NN/out/video.mp4`) and creates the 「Claude Code 入門」 course (needs `ADMIN_EMAIL` and `ADMIN_PASSWORD`).
+`npm run seed:claude-code -- <folder>` uploads the lesson videos and creates both courses: 「Claude Code 入門」 (`<folder>/lesson-NN/out/video.mp4`, 20 lessons) and 「Claude Code を自分仕様にする」 (`<folder>/c2-NN/out/video.mp4`, 8 lessons). Lesson 1 of each is free. Courses that already exist are skipped. Needs `ADMIN_EMAIL` and `ADMIN_PASSWORD`; run `npm run video:hls` afterwards.

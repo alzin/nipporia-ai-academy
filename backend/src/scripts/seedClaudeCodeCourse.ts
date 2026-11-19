@@ -1,6 +1,8 @@
-// Loads the 「Claude Code 入門」 course: uploads the 20 lesson videos to S3 and
-// creates the course and lessons through the admin API (server must be running).
-// Usage: npm run seed:claude-code -- <videos root>   (folder containing lesson-01/out/video.mp4 ...)
+// Loads the Claude Code courses: uploads the lesson videos to S3 and creates the
+// courses and lessons through the admin API (server must be running). Courses that
+// already exist (same title) are skipped. Afterwards run `npm run video:hls`.
+// Usage: npm run seed:claude-code -- <videos root>
+//        (folder containing lesson-01/out/video.mp4 ... and c2-01/out/video.mp4 ...)
 // Admin login is read from ADMIN_EMAIL / ADMIN_PASSWORD.
 import 'reflect-metadata';
 import fs from 'fs';
@@ -8,9 +10,27 @@ import path from 'path';
 import { S3StorageService } from '../infrastructure/services/S3StorageService';
 
 const API = process.env.SEED_API_URL || 'http://localhost:5000/api';
-const FREE_LESSONS = [1];
+interface CourseSeed {
+  title: string;
+  description: string;
+  icon: string;
+  /** S3 folder: courses/<slug>/lesson-NN.mp4 */
+  slug: string;
+  /** Local render folders: <root>/<folderPrefix>NN/out/video.mp4 */
+  folderPrefix: string;
+  freeLessons: number[];
+  lessons: Array<[string, string]>;
+}
 
-const LESSONS: Array<[string, string]> = [
+const COURSES: CourseSeed[] = [
+  {
+    title: 'Claude Code 入門',
+    description: 'Claude Code をまったく使ったことがない人のための講座です。1本60〜90秒、全20回。デスクトップアプリの準備から、変更の確かめ方、計画の立て方まで順番に見ていきます。',
+    icon: 'CC',
+    slug: 'claude-code-intro',
+    folderPrefix: 'lesson-',
+    freeLessons: [1],
+    lessons: [
   ['Claude Codeってなに？', 'Claude Code がどんな道具で、何を頼めるのかを見ていきます。'],
   ['Claude Codeはどこで使える？', 'ターミナル、エディター、デスクトップアプリ、Web。どこで使っても中身は同じです。'],
   ['使い始めるための準備', '有料プランの用意から、デスクトップアプリのインストール、サインイン、Code タブを開くまで。'],
@@ -31,6 +51,26 @@ const LESSONS: Array<[string, string]> = [
   ['よくある作業を頼む', '知らないコードを理解する、バグを直す、テストを書く。'],
   ['前のセッションを見つけて続ける', 'セッションに名前を付けて、あとから探して続けます。'],
   ['会話が長くなったら', 'コンテキストの考え方と、/context と /compact の使い方です。'],
+],
+  },
+  {
+    title: 'Claude Code を自分仕様にする',
+    description: '「Claude Code 入門」を見終えた人のための講座です。1本60〜90秒、全8回。スキル、コネクタ、プラグイン、権限のルール、サブエージェント、フックを使って、Claude Code を自分の仕事に合わせていきます。',
+    icon: 'C2',
+    slug: 'claude-code-custom',
+    folderPrefix: 'c2-',
+    freeLessons: [1],
+    lessons: [
+      ['自分仕様にする道具の全体図', 'CLAUDE.md、スキル、MCP、サブエージェント、フック、プラグイン。どんなときにどれを足すかを見ていきます。'],
+      ['自分のスキルを作る', 'SKILL.md を書いて、/名前 で呼び出せる自分だけの手順を作ります。'],
+      ['コネクタでほかのツールとつなぐ', 'カレンダーやチャットなどをつないで、Claude が直接読んだり送ったりできるようにします。'],
+      ['プラグインを入れる', 'スキルやフックをまとめたパッケージを入れる方法と、入れる前に確かめることです。'],
+      ['権限のルールを決める', 'settings.json に allow / ask / deny を書いて、ツールごとに許可を決めます。'],
+      ['サブエージェントに任せる', '別のコンテキストで作業して、要約だけを返してくれる助っ人を使います。'],
+      ['フックで自動化する', '決まったタイミングで必ず動くコマンドを、settings.json に書いておきます。'],
+      ['最終回：ふりかえりと次の一歩', '第1回から第7回までのおさらいと、どの道具から足すか、次に読むものです。'],
+    ],
+  },
 ];
 
 async function api(method: string, p: string, cookie: string, body?: unknown) {
@@ -46,7 +86,7 @@ async function api(method: string, p: string, cookie: string, body?: unknown) {
 
 async function main() {
   const root = process.argv[2];
-  if (!root || !fs.existsSync(root)) throw new Error('Pass the folder that contains lesson-01 ... lesson-20');
+  if (!root || !fs.existsSync(root)) throw new Error('Pass the folder that contains lesson-01 ... and c2-01 ...');
   const email = process.env.ADMIN_EMAIL;
   const password = process.env.ADMIN_PASSWORD;
   if (!email || !password) throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD');
@@ -58,37 +98,42 @@ async function main() {
   const cookie = login.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
 
   const { json: courses } = await api('GET', '/courses', cookie);
-  if ((Array.isArray(courses) ? courses : courses?.courses || []).some((c: any) => c.title === 'Claude Code 入門')) {
-    console.log('Course 「Claude Code 入門」 already exists; nothing to do.');
-    return;
-  }
-
+  const existing = (Array.isArray(courses) ? courses : courses?.courses || []).map((c: any) => c.title);
   const s3 = new S3StorageService();
-  const urls: string[] = [];
-  for (let i = 1; i <= LESSONS.length; i++) {
-    const nn = String(i).padStart(2, '0');
-    const file = path.join(root, `lesson-${nn}`, 'out', 'video.mp4');
-    const up = await s3.uploadCommunityMedia('admin', { buffer: fs.readFileSync(file), filename: 'video.mp4', mimeType: 'video/mp4' },
-      'courses/claude-code-intro', `lesson-${nn}`);
-    urls.push(up.url);
-    console.log(`uploaded lesson-${nn} (${(up.size / 1024 / 1024).toFixed(1)} MB)`);
-  }
 
-  const { json: course } = await api('POST', '/admin/courses', cookie, {
-    title: 'Claude Code 入門',
-    description: 'Claude Code をまったく使ったことがない人のための講座です。1本60〜90秒、全20回。デスクトップアプリの準備から、変更の確かめ方、計画の立て方まで順番に見ていきます。',
-    icon: 'CC',
-    freeLessonCount: 0,
-  });
-  const courseId = course.id || course.course?.id;
+  for (const seed of COURSES) {
+    if (existing.includes(seed.title)) {
+      console.log(`Course 「${seed.title}」 already exists; skipped.`);
+      continue;
+    }
 
-  for (let i = 0; i < LESSONS.length; i++) {
-    const [title, description] = LESSONS[i];
-    await api('POST', `/admin/courses/${courseId}/lessons`, cookie, {
-      title, description, order: i + 1, lessonType: 'VIDEO', contentUrl: urls[i], isFree: FREE_LESSONS.includes(i + 1),
+    const urls: string[] = [];
+    for (let i = 1; i <= seed.lessons.length; i++) {
+      const nn = String(i).padStart(2, '0');
+      const file = path.join(root, `${seed.folderPrefix}${nn}`, 'out', 'video.mp4');
+      if (!fs.existsSync(file)) throw new Error(`Missing ${file}`);
+      const up = await s3.uploadCommunityMedia('admin', { buffer: fs.readFileSync(file), filename: 'video.mp4', mimeType: 'video/mp4' },
+        `courses/${seed.slug}`, `lesson-${nn}`);
+      urls.push(up.url);
+      console.log(`uploaded ${seed.slug}/lesson-${nn} (${(up.size / 1024 / 1024).toFixed(1)} MB)`);
+    }
+
+    const { json: course } = await api('POST', '/admin/courses', cookie, {
+      title: seed.title,
+      description: seed.description,
+      icon: seed.icon,
+      freeLessonCount: 0,
     });
+    const courseId = course.id || course.course?.id;
+
+    for (let i = 0; i < seed.lessons.length; i++) {
+      const [title, description] = seed.lessons[i];
+      await api('POST', `/admin/courses/${courseId}/lessons`, cookie, {
+        title, description, order: i + 1, lessonType: 'VIDEO', contentUrl: urls[i], isFree: seed.freeLessons.includes(i + 1),
+      });
+    }
+    console.log(`Created 「${seed.title}」 (${courseId}) with ${seed.lessons.length} lessons (free: ${seed.freeLessons.join(', ')}).`);
   }
-  console.log(`Created course ${courseId} with ${LESSONS.length} lessons (free: ${FREE_LESSONS.join(', ')}).`);
 }
 
 main().catch((e) => { console.error('Failed:', e.message); process.exit(1); });
