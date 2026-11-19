@@ -24,6 +24,7 @@ import { VideoRepository } from "../../database/repositories/VideoRepository";
 // ========== SERVICES ==========
 import { ActivityService } from "../../services/ActivityService";
 import { EmailService } from "../../services/EmailService";
+import { IEmailService } from "../../../domain/services/IEmailService";
 import { ResendEmailService } from "../../services/ResendEmailService";
 import { PaymentService } from "../../services/PaymentService";
 import { PasswordService } from "../../services/PasswordService";
@@ -76,6 +77,8 @@ import { DeleteAnnouncementCommentUseCase } from "../../../application/use-cases
 
 // Auth Use Cases
 import { LoginUseCase } from "../../../application/use-cases/auth/LoginUseCase";
+import { GoogleLoginUseCase } from "../../../application/use-cases/auth/GoogleLoginUseCase";
+import { ENV_CONFIG } from "../../config/env.config";
 import { RefreshTokenUseCase } from "../../../application/use-cases/auth/RefreshTokenUseCase";
 import { RegisterUserUseCase } from "../../../application/use-cases/auth/RegisterUserUseCase";
 import { RegisterWithVerificationUseCase } from "../../../application/use-cases/auth/RegisterWithVerificationUseCase";
@@ -208,7 +211,7 @@ export interface DependencyContainer {
     // Services
     services: {
         activity: ActivityService;
-        email: ResendEmailService;
+        email: IEmailService;
         payment: PaymentService;
         password: PasswordService;
         token: TokenService;
@@ -266,6 +269,7 @@ export interface DependencyContainer {
 
         // Auth
         login: LoginUseCase;
+        googleLogin: GoogleLoginUseCase;
         refreshToken: RefreshTokenUseCase;
         registerUser: RegisterUserUseCase;
         registerWithVerification: RegisterWithVerificationUseCase;
@@ -406,7 +410,8 @@ export const setupDependencies = (): DependencyContainer => {
     // ========== Initialize Services ==========
     const services = {
         activity: new ActivityService(),
-        email: new ResendEmailService(),
+        // SMTP when EMAIL_HOST is set (production: info@nipporia.com), otherwise Resend, otherwise console.
+        email: ENV_CONFIG.EMAIL_HOST ? new EmailService() : new ResendEmailService(),
         payment: new PaymentService(),
         password: new PasswordService(),
         token: new TokenService(),
@@ -539,6 +544,14 @@ export const setupDependencies = (): DependencyContainer => {
             services.password,
             services.token,
             repositories.profile
+        ),
+        googleLogin: new GoogleLoginUseCase(
+            ENV_CONFIG.GOOGLE_CLIENT_ID,
+            repositories.user,
+            repositories.profile,
+            services.password,
+            services.token,
+            services.brevo
         ),
         refreshToken: new RefreshTokenUseCase(
             repositories.user,
@@ -915,7 +928,8 @@ export const setupDependencies = (): DependencyContainer => {
             useCases.registerWithVerification,
             useCases.verifyEmailWithCode,
             useCases.resendVerificationCode,
-            useCases.checkAuth
+            useCases.checkAuth,
+            useCases.googleLogin
         ),
 
         comment: new CommentController(

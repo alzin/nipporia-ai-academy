@@ -10,6 +10,7 @@ import { ResendVerificationCodeUseCase } from '../../../application/use-cases/au
 import { CheckAuthUseCase } from '../../../application/use-cases/auth/CheckAuthUseCase';
 import { ValidateResetTokenUseCase } from '../../../application/use-cases/auth/ValidateResetTokenUseCase';
 import { VerifyEmailWithCodeUseCase } from '../../../application/use-cases/auth/VerifyEmailWithCodeUseCase';
+import { GoogleLoginUseCase } from '../../../application/use-cases/auth/GoogleLoginUseCase';
 import { AuthenticationError } from '../../../domain/errors/AuthenticationError';
 import { getAccessTokenCookieConfig, getRefreshTokenCookieConfig, COOKIE_NAMES } from '../../config/cookieConfig';
 import { ENV_CONFIG } from '../../config/env.config';
@@ -25,8 +26,41 @@ export class AuthController {
     private readonly registerWithVerificationUseCase: RegisterWithVerificationUseCase,
     private readonly verifyEmailWithCodeUseCase: VerifyEmailWithCodeUseCase,
     private readonly resendVerificationCodeUseCase: ResendVerificationCodeUseCase,
-    private readonly checkAuthUseCase: CheckAuthUseCase
+    private readonly checkAuthUseCase: CheckAuthUseCase,
+    private readonly googleLoginUseCase: GoogleLoginUseCase
   ) { }
+
+  private setSessionCookies(res: Response, tokens: { accessToken: string; refreshToken: string }): void {
+    res.cookie(COOKIE_NAMES.ACCESS_TOKEN, tokens.accessToken, {
+      ...getAccessTokenCookieConfig(),
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+    res.cookie(COOKIE_NAMES.REFRESH_TOKEN, tokens.refreshToken, {
+      ...getRefreshTokenCookieConfig(),
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+  }
+
+  /** Public settings the login pages need (Google client ID is public by design). */
+  async config(_req: Request, res: Response): Promise<void> {
+    res.json({ googleClientId: ENV_CONFIG.GOOGLE_CLIENT_ID || null });
+  }
+
+  async googleLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { response, tokens, isNewUser } = await this.googleLoginUseCase.execute({
+        credential: req.body.credential,
+      });
+      this.setSessionCookies(res, tokens);
+      res.json({ ...response, isNewUser });
+    } catch (error) {
+      if (error instanceof AuthenticationError) {
+        res.status(error.statusCode).json({ error: error.message });
+      } else {
+        next(error);
+      }
+    }
+  }
 
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code 入門｜ターミナルなしで始める動画講座</title>
+<meta name="description" content="Claude Code をはじめて使う人のための動画講座。アプリの準備から、最初のお願い、変更の確かめ方まで。1本60〜90秒の動画で、ひとつずつ覚えます。第1回は無料で見られます。">
+<meta property="og:title" content="Claude Code 入門｜ターミナルなしで始める動画講座">
+<meta property="og:description" content="1本60〜90秒の動画で、Claude Code の使い方をゼロから順番に。字幕つき。第1回は無料。">
+<meta property="og:image" content="https://academy.nipporia.com/claude-code/media/sample-poster.jpg">
+<meta property="og:url" content="https://academy.nipporia.com/claude-code/">
+<link rel="canonical" href="https://academy.nipporia.com/claude-code/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<!--
+  公開先：https://academy.nipporia.com/claude-code/（視聴サイトと同じサーバー）。
+  価格：メンバーシップ（月額 ¥4,980 / 年額 ¥49,800、税込）。視聴サイトの Stripe の価格と同じにしておくこと。
+-->
+<style>
+:root{
+  --paper:#F4F1EB;
+  --card:#FFFDF9;
+  --ink:#23211D;
+  --muted:#5F5B54;
+  --line:#E3DDD2;
+  --accent:#AE4A24;
+  --accent-ink:#8F3B1B;
+  --accent-soft:#F8E6DD;
+  --blue:#3C5A80;
+  --caption:#364152;
+  --todo:#FFF1A8;
+  --r:14px;
+  --max:1080px;
+  --header:60px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:calc(var(--header) + 16px);scrollbar-color:#C9C1B4 var(--paper)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0;background:var(--paper);color:var(--ink);caret-color:var(--accent);
+  font-family:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;
+  font-size:16px;line-height:1.9;letter-spacing:.03em;font-kerning:normal;
+}
+::selection{background:var(--accent-soft);color:var(--ink)}
+h1,h2,h3{line-height:1.45;letter-spacing:.02em;font-feature-settings:"palt";word-break:auto-phrase;text-wrap:balance;margin:0}
+p{margin:0}
+p,li,q,summary,figcaption,dd,.t{word-break:auto-phrase;line-break:strict}
+img,video{display:block;max-width:100%;height:auto}
+a{color:inherit;text-underline-offset:.25em;text-decoration-thickness:1px}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+.num{font-variant-numeric:tabular-nums}
+.nw{white-space:nowrap}
+.ib{display:inline-block}
+mark.todo{background:var(--todo);color:#5A4A00;padding:0 .3em;border-radius:4px;font-weight:700}
+.icon{width:1em;height:1em;flex:none}
+
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.55em;
+  min-height:52px;padding:0 26px;border-radius:999px;border:0;
+  background:var(--accent);color:#fff;font:inherit;font-weight:700;letter-spacing:.05em;
+  text-decoration:none;cursor:pointer;transition:background .15s ease, transform .15s ease;
+}
+.btn:hover{background:var(--accent-ink)}
+.btn:active{transform:translateY(1px)}
+.btn.sm{min-height:44px;padding:0 18px;font-size:14px}
+.link{display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:var(--blue);text-decoration:underline;text-decoration-color:rgba(60,90,128,.35)}
+.link:hover{text-decoration-color:currentColor}
+:is(a,button,summary):focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:6px}
+.btn:focus-visible{border-radius:999px}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid #CFC6B8}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:var(--header)}
+.top-actions{display:flex;align-items:center;gap:16px}
+.top .login{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);font-weight:700;text-decoration:none}
+.top .login:hover{color:var(--accent-ink);text-decoration:underline}
+.brand{display:inline-flex;align-items:center;gap:10px;min-height:44px;font-weight:700;text-decoration:none;letter-spacing:.04em}
+
+/* hero */
+.hero{padding:40px 0 64px}
+.hero-grid{display:grid;gap:22px;grid-template-areas:"h" "player" "lead" "cta" "facts"}
+.hero h1{grid-area:h;font-size:clamp(31px,6.2vw,46px);font-weight:900;letter-spacing:0}
+.hero h1 .hl{color:var(--accent)}
+.lead{grid-area:lead;font-size:clamp(16px,2.1vw,18px);color:var(--muted);max-width:32em}
+.cta{grid-area:cta;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.cta .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px}
+.cta .price-hint{font-size:14px;color:var(--muted)}
+.cta .price-hint b{color:var(--ink)}
+.facts{grid-area:facts;margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 20px;font-size:15px;color:var(--muted)}
+.facts b{font-size:20px;font-weight:900;color:var(--ink);margin:0 .08em}
+.player{grid-area:player;margin:0}
+.frame{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#EEE9E1;box-shadow:0 18px 40px -24px rgba(60,40,20,.35)}
+.frame video{width:100%;aspect-ratio:16/9;object-fit:cover}
+.play{
+  position:absolute;left:50%;bottom:7%;transform:translateX(-50%);white-space:nowrap;
+  display:inline-flex;align-items:center;gap:.6em;min-height:48px;padding:0 20px 0 14px;
+  border:0;border-radius:999px;background:var(--accent);color:#fff;font:inherit;font-weight:700;letter-spacing:.04em;cursor:pointer;
+  box-shadow:0 10px 24px -10px rgba(120,50,20,.55);transition:background .15s ease;
+}
+.play:hover{background:var(--accent-ink)}
+.play:focus-visible{border-radius:999px}
+.play .dur{font-weight:500;opacity:.85}
+.play svg{width:26px;height:26px}
+@media (max-width:480px){.lessons li{gap:10px;padding:12px 14px}.lessons .no{min-width:3.2em}.play{min-height:44px;font-size:15px;bottom:5%}.play svg{width:22px;height:22px}}
+.player figcaption{font-size:13px;color:var(--muted);padding:10px 2px 0}
+@media (min-width:900px){
+  .hero{padding:72px 0 96px}
+  .hero-grid{grid-template-columns:1.12fr 1fr;column-gap:48px;row-gap:24px;align-content:center;
+    grid-template-areas:"h player" "lead player" "cta player" "facts player"}
+  .player{align-self:center}
+}
+
+/* sections */
+section{padding:80px 0}
+.band{background:var(--card);border-block:1px solid var(--line)}
+.sec-head{max-width:40em;margin:0 auto 40px;text-align:center}
+.sec-head h2{font-size:clamp(24px,4vw,34px);font-weight:900}
+.sec-head p{margin-top:16px;color:var(--muted)}
+.mk{background:linear-gradient(transparent 64%,#F3D2C1 64%);padding:0 .08em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.illo{display:block;width:min(340px,80%);height:auto;margin:-8px auto 28px}
+.bridge{text-align:center;margin-top:40px}
+.bridge .illo{margin:0 auto 14px}
+.bridge-text{font-size:clamp(20px,3.4vw,26px);font-weight:900;line-height:1.6;font-feature-settings:"palt"}
+.jump{display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:700;color:var(--blue);text-decoration:underline;text-decoration-color:rgba(60,90,128,.35)}
+.jump:hover{text-decoration-color:currentColor}
+
+/* worries */
+.worries{display:grid;gap:0 48px}
+@media (min-width:760px){.worries{grid-template-columns:1fr 1fr}}
+.worry{padding:22px 0;border-top:1px solid var(--line)}
+.worry q{display:block;font-weight:700;font-size:18px;quotes:"「" "」";text-indent:-.55em}
+.worry p{margin-top:8px;color:var(--muted)}
+.worry .jump{margin-top:4px}
+
+/* features */
+.feature{display:grid;gap:22px;align-items:center;padding:36px 0;border-top:1px solid var(--line)}
+.features>.feature:first-child{border-top:0;padding-top:0}
+.feature img{border-radius:12px;border:1px solid var(--line);background:var(--paper);width:100%}
+.feature h3{font-size:clamp(20px,3vw,24px);font-weight:700}
+.feature p{margin-top:10px;color:var(--muted)}
+.feature .jump{margin-top:6px}
+@media (min-width:860px){
+  .feature{grid-template-columns:1.45fr 1fr;gap:48px}
+  .features>.feature:nth-child(even){grid-template-columns:1fr 1.45fr}
+  .features>.feature:nth-child(even) img{order:2}
+}
+.compare-wrap{max-width:760px;margin:0 auto}
+.compare{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:15px;line-height:1.6}
+.compare th,.compare td{padding:16px 18px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.compare tbody tr:last-child th,.compare tbody tr:last-child td{border-bottom:0}
+.compare thead th{font-size:14px;font-weight:700;color:var(--muted);line-height:1.4}
+.compare thead th.us{color:var(--accent-ink)}
+.compare tbody th{width:6.5em;font-size:14px;font-weight:700;color:var(--muted);white-space:nowrap}
+.compare td{color:var(--muted)}
+.compare td.us{color:var(--ink);font-weight:700}
+.compare .us{border-left:2px solid var(--accent)}
+.compare td small{display:block;font-size:13px;color:var(--muted)}
+.compare td b{font-size:18px}
+.compare-note{max-width:760px;margin:24px auto 0;text-align:center}
+.fit-head{margin-top:72px}
+.compare-src{max-width:760px;margin:12px auto 0;font-size:13px;color:var(--muted);text-align:center}
+@media (max-width:480px){.compare{font-size:14px}.compare th,.compare td{padding:12px 10px}.compare tbody th{width:auto;white-space:normal}.compare-note,.compare-src{text-align:left}}
+.capbar{margin:40px auto 0;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:15px;text-align:center;line-height:1.8}
+.capbar span{display:inline-block;margin:0 .3em}
+
+/* curriculum */
+.chapters{display:grid;gap:28px}
+.chapter h3{display:flex;align-items:baseline;gap:12px;font-size:18px;margin-bottom:10px}
+.chapter h3 small{font-size:13px;font-weight:500;color:var(--muted)}
+.lessons{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--card);overflow:hidden}
+.lessons li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 18px;border-top:1px solid var(--line)}
+.lessons li:first-child{border-top:0}
+.lessons li:target{background:var(--accent-soft)}
+.lessons .no{min-width:3.6em;font-size:14px;font-weight:700;color:var(--accent-ink);font-variant-numeric:tabular-nums}
+.lessons .t{font-weight:500;line-height:1.6;overflow-wrap:anywhere}
+.lessons .t small{display:block;font-size:13px;font-weight:400;color:var(--muted)}
+.lessons .d{font-size:13px;color:var(--muted)}
+.lessons .free{display:inline-flex;align-items:center;gap:.4em;min-height:36px;padding:0 12px;border:0;border-radius:999px;background:var(--blue);color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.lessons .free:hover{background:#2F4766}
+.lessons .free svg{width:16px;height:16px}
+.total{margin-top:16px;font-size:14px;color:var(--muted)}
+.midcta{margin-top:40px;padding-top:32px;border-top:1px dashed var(--line);text-align:center}
+.midcta p{font-weight:900;font-size:20px}
+.midcta .row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 24px;margin-top:14px}
+
+/* fit */
+.fit{display:grid;gap:16px}
+@media (min-width:760px){.fit{grid-template-columns:1fr 1fr}}
+.fit>div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px 26px}
+.fit h3{font-size:18px}
+.fit ul{margin:12px 0 0;padding-left:1.2em}
+.fit li{margin-top:6px}
+.fit .no-fit h3{color:var(--muted)}
+
+/* teacher */
+.teacher{display:grid;gap:20px;align-items:start;max-width:760px}
+@media (min-width:640px){.teacher{grid-template-columns:120px 1fr;gap:28px}}
+.avatar{width:120px;height:120px;border-radius:50%;border:2px dashed #CBBFAE;display:grid;place-items:center;font-size:13px;color:var(--muted);background:var(--card)}
+.teacher h3{font-size:20px}
+.teacher p{margin-top:10px;color:var(--muted)}
+
+/* price */
+.price{max-width:660px;margin:0 auto;background:var(--card);border:2px solid var(--accent);border-radius:20px;padding:36px 26px;text-align:center}
+.price .label{font-size:15px;font-weight:700;color:var(--accent-ink);letter-spacing:.05em}
+.price .amount{font-size:clamp(44px,9vw,64px);font-weight:900;line-height:1.2;margin-top:12px;letter-spacing:0;font-feature-settings:normal}
+.price .amount small{font-size:16px;font-weight:700;margin-left:4px}
+.price .until{font-weight:700}
+.price .after{font-size:14px;color:var(--muted);margin-top:2px}
+.price h3{font-size:15px;margin:28px 0 4px;text-align:left}
+.gains{list-style:none;padding:0;margin:0;text-align:left}
+.gains li{padding:8px 0 8px 1.9em;border-top:1px dashed var(--line);position:relative}
+.gains li::before{content:"";position:absolute;left:.2em;top:.95em;width:.9em;height:.5em;border-left:2.5px solid var(--accent);border-bottom:2.5px solid var(--accent);transform:rotate(-45deg)}
+.terms{margin:20px 0 0;text-align:left;font-size:15px}
+.terms div{display:grid;grid-template-columns:6em 1fr;gap:12px;padding:8px 0;border-top:1px dashed var(--line)}
+.terms dt{color:var(--muted)}
+.terms dd{margin:0}
+.need{margin:22px 0;text-align:left;border-top:2px solid var(--ink);padding:12px 0 0;font-size:15px}
+.need b{display:block}
+.price .btn{width:100%;max-width:380px;min-height:58px;font-size:17px}
+.pay{font-size:13px;color:var(--muted);margin-top:14px}
+.steps{max-width:660px;margin:28px auto 0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:s}
+@media (min-width:700px){.steps{grid-template-columns:repeat(3,1fr)}}
+.steps li{counter-increment:s;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px}
+.steps li::before{content:counter(s);display:inline-grid;place-items:center;width:24px;height:24px;margin-right:8px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700}
+.steps-title{max-width:660px;margin:36px auto 0;font-size:15px}
+
+/* faq */
+.faq-list{max-width:760px}
+.faq-list details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:10px}
+.faq-list summary{cursor:pointer;list-style:none;padding:16px 52px 16px 20px;min-height:56px;font-weight:700;position:relative}
+.faq-list summary::-webkit-details-marker{display:none}
+.faq-list summary::after{content:"";position:absolute;right:22px;top:50%;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg);transition:transform .2s ease}
+.faq-list details[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+.faq-list details p{padding:0 20px 18px;color:var(--muted)}
+
+/* closing */
+.closing{text-align:center}
+.closing h2{font-size:clamp(24px,4.4vw,36px);font-weight:900}
+.closing p{margin-top:12px;color:var(--muted)}
+.closing .row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 24px;margin-top:28px}
+
+footer{border-top:1px solid var(--line);padding:28px 0 120px;font-size:13px;color:var(--muted)}
+footer nav{display:flex;flex-wrap:wrap;gap:0 22px;margin-bottom:10px}
+footer nav a{display:inline-flex;align-items:center;min-height:44px}
+footer p{text-wrap:pretty}
+@media (min-width:760px){footer{padding-bottom:40px}}
+
+/* mobile buy bar */
+.buybar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:12px;transform:translateY(110%);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.buybar.show{transform:none}
+.buybar .p{font-weight:900;font-size:20px;line-height:1.2}
+.buybar .p small{font-size:12px;font-weight:700;margin-left:2px}
+.buybar .p span{display:block;font-size:11px;font-weight:500;color:var(--muted)}
+@media (min-width:760px){.buybar{display:none}}
+@media (prefers-reduced-motion:reduce){.buybar,.play{transition:none}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" fill-opacity=".18"/><path d="M9.5 7.8v8.4c0 .5.6.8 1 .5l6.3-4.2a.6.6 0 0 0 0-1L10.5 7.3c-.4-.3-1 0-1 .5Z" fill="currentColor"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#AE4A24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/><path d="M22 10v6"/></svg>
+      Claude Code 入門
+    </a>
+    <div class="top-actions">
+      <a class="login" href="/login">ログイン</a>
+      <a class="btn sm" href="#price">申し込む</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <h1><span class="ib"><span class="hl">ターミナルなし</span>で、</span><span class="ib">Claude Code を</span><span class="ib">はじめる。</span></h1>
+
+    <figure class="player" id="sample">
+      <div class="frame">
+        <video id="lesson1" controls preload="metadata" playsinline poster="media/sample-poster.jpg" aria-label="第1回 Claude Codeってなに？（無料公開）">
+          <source src="media/sample-lesson01.mp4" type="video/mp4">
+        </video>
+        <button class="play" type="button" data-play hidden>
+          <svg aria-hidden="true"><use href="#i-play"/></svg>第1回を再生<span class="dur num">1:10</span>
+        </button>
+      </div>
+      <figcaption>第1回「Claude Codeってなに？」を、そのまま公開しています。登録も、説明会の予約もいりません。</figcaption>
+    </figure>
+
+    <p class="lead">アプリの準備から、最初のお願い、変更の<span class="nw">確かめ方</span>、計画の立て方まで。1本60〜90秒の動画で、ひとつずつ覚えていきます。</p>
+
+    <div class="cta">
+      <div class="row">
+        <a class="btn" href="#sample" data-play><svg class="icon" style="width:22px;height:22px" aria-hidden="true"><use href="#i-play"/></svg>第1回を無料で見る</a>
+        <a class="link" href="#price">料金と内容を見る</a>
+      </div>
+      <p class="price-hint"><span class="nw">月額 <b class="num">¥4,980</b>（税込）</span> <span class="nw">いつでも解約できます</span></p>
+    </div>
+
+    <ul class="facts">
+      <li>全<b class="num">20</b>回</li>
+      <li>合計 約<b class="num">24</b>分</li>
+      <li>1本<b class="num">60〜90</b>秒</li>
+      <li>字幕つき</li>
+      <li>第1回は無料</li>
+    </ul>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>こんなところで、<span class="mk">止まっていませんか？</span></h2>
+    </div>
+    <picture><source srcset="media/illo-worry.webp" type="image/webp"><img class="illo" src="media/illo-worry.png" width="555" height="438" alt="ノートパソコンの黒い画面を見て、困った顔をしている人のイラスト" loading="lazy"></picture>
+    <div class="worries">
+      <div class="worry">
+        <q>何から始めればいいのか、わからない</q>
+        <p>用意するもの、アプリのインストール、最初のお願いの仕方。この順番で見ていけば、迷うところはほとんどありません。</p>
+        <a class="jump" href="#l3">第3回・第4回を見る</a>
+      </div>
+      <div class="worry">
+        <q>AI が勝手にファイルを書き換えそうで怖い</q>
+        <p>ファイルを書き換える前に、ちゃんと確認してくれます。どこが変わるのかを見てから、受け入れるかどうかを決めればいいんです。</p>
+        <a class="jump" href="#l5">第5回を見る</a>
+      </div>
+      <div class="worry">
+        <q>黒い画面（ターミナル）は使いたくない</q>
+        <p>この講座で使うのは、デスクトップアプリです。コマンドは覚えなくて大丈夫。</p>
+        <a class="jump" href="#l2">第2回・第3回を見る</a>
+      </div>
+      <div class="worry">
+        <q>長い講座は、最後まで続かない</q>
+        <p>1本は60〜90秒。1回で覚えることは1つだけです。通勤中や休み時間に、1本ずつ進められます。</p>
+        <a class="jump" href="#curriculum">全20回を見る</a>
+      </div>
+    </div>
+    <div class="bridge">
+      <picture><source srcset="media/illo-relief.webp" type="image/webp"><img class="illo" src="media/illo-relief.png" width="555" height="438" alt="明るいアプリの画面を見て、ほっとした顔で笑っている人のイラスト" loading="lazy"></picture>
+      <p class="bridge-text">ひとつずつ動画で見ていけば、<br><span class="mk">ちゃんと使えるようになります。</span></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>頼む、確かめる、直してもらう。<br><span class="mk">ひとりでできるように</span>なります。</h2>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <img src="media/l05-approve.jpg" width="1500" height="880" loading="lazy" alt="第5回の画面。Claude Code がファイルを編集する前に確認を求め、変わる部分を見て「拒否」か「承認」かを選ぶ様子">
+        <div>
+          <h3>変更は、確かめてから受け入れる</h3>
+          <p>ファイルが書き換わる前に、何がどう変わるのかを見て、承認か拒否かを選べます。毎回聞いてもらうか、ある程度まかせるか。その切り替え（権限モード）も、この回で。</p>
+          <a class="jump" href="#l5">第5回を見る</a>
+        </div>
+      </div>
+
+      <div class="feature">
+        <img src="media/l10-comment.jpg" width="1620" height="780" loading="lazy" alt="第10回の画面。変わった行だけを並べた差分ビューで、ある行に「もっとやさしい言い方にして」とコメントを付けた様子">
+        <div>
+          <h3>気になる行に、コメントで直してもらう</h3>
+          <p>変わった行だけを並べた画面（差分ビュー）で、直してほしい行にそのままコメントを書けます。あとは Claude Code が読んで、書き直してくれます。</p>
+          <a class="jump" href="#l10">第10回を見る</a>
+        </div>
+      </div>
+
+      <div class="feature">
+        <img src="media/l07-mention.jpg" width="1500" height="900" loading="lazy" alt="第7回の画面。入力欄から「@app.js を読んで、何をするプログラムか短く教えて」と頼んだ様子">
+        <div>
+          <h3>@ でファイルを指定して、的確に頼む</h3>
+          <p>入力欄で @ を打つと、ファイルの一覧が出ます。どのファイルを見てほしいかを伝えるだけで、答えがぐっと的確になります。</p>
+          <a class="jump" href="#l7">第7回を見る</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="capbar"><span>公式ドキュメントに沿った内容</span>・<span>本物の操作画面</span>・<span>全回字幕つき</span>・<span>1回1テーマ</span></p>
+  </div>
+</section>
+
+<section class="band" id="curriculum">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>全20回の内容</h2>
+      <p>1回1テーマ。上から順に見ていけば大丈夫です。第2部は、第1部を見終えてから進む内容です。</p>
+    </div>
+    <div class="chapters">
+      <div class="chapter">
+        <h3>はじめる準備<small>第1〜4回</small></h3>
+        <ol class="lessons">
+          <li id="l1"><span class="no">第1回</span><span class="t"><span class="nw">Claude Code</span>ってなに？</span><button class="free" type="button" data-play><svg aria-hidden="true"><use href="#i-play"/></svg>無料で見る</button></li>
+          <li id="l2"><span class="no">第2回</span><span class="t"><span class="nw">Claude Code</span>はどこで使える？</span><span class="d num">1:06</span></li>
+          <li id="l3"><span class="no">第3回</span><span class="t">使い始めるための準備</span><span class="d num">1:14</span></li>
+          <li id="l4"><span class="no">第4回</span><span class="t">はじめてのセッションを始めよう<small>フォルダを選んで、最初のお願いをするまで</small></span><span class="d num">1:29</span></li>
+        </ol>
+      </div>
+      <div class="chapter">
+        <h3>頼む・確かめる・直してもらう<small>第5〜11回</small></h3>
+        <ol class="lessons" start="5">
+          <li id="l5"><span class="no">第5回</span><span class="t">変更を確認して受け入れる</span><span class="d num">1:10</span></li>
+          <li id="l6"><span class="no">第6回</span><span class="t">作業の途中で指示を変える</span><span class="d num">1:01</span></li>
+          <li id="l7"><span class="no">第7回</span><span class="t">@ でファイルを指定して頼む</span><span class="d num">1:00</span></li>
+          <li id="l8"><span class="no">第8回</span><span class="t">画像やファイルを添付して頼む</span><span class="d num">1:04</span></li>
+          <li id="l9"><span class="no">第9回</span><span class="t">/ でコマンドやスキルを呼び出す<small>よく使う作業を、短いコマンドで呼び出す</small></span><span class="d num">1:08</span></li>
+          <li id="l10"><span class="no">第10回</span><span class="t">差分ビューでコメントして直してもらう<small>変わった行だけを並べた画面で、行ごとに頼む</small></span><span class="d num">1:04</span></li>
+          <li id="l11"><span class="no">第11回</span><span class="t">作業を止めずに、ちょっとした質問をする</span><span class="d num">1:15</span></li>
+        </ol>
+      </div>
+      <div class="chapter">
+        <h3>もっと便利に・第1部のまとめ<small>第12〜14回</small></h3>
+        <ol class="lessons" start="12">
+          <li id="l12"><span class="no">第12回</span><span class="t">CLAUDE.md でプロジェクトのルールを伝える<small>毎回の説明を、ファイルに書いておく</small></span><span class="d num">1:23</span></li>
+          <li id="l13"><span class="no">第13回</span><span class="t">いくつかの作業を同時に進める</span><span class="d num">1:03</span></li>
+          <li id="l14"><span class="no">第14回</span><span class="t">ふりかえりと次の一歩</span><span class="d num">1:21</span></li>
+        </ol>
+      </div>
+      <div class="chapter">
+        <h3>第2部 もっと上手に使う<small>第15〜20回</small></h3>
+        <ol class="lessons" start="15">
+          <li id="l15"><span class="no">第15回</span><span class="t">上手な頼み方<small>具体的に頼んで、確かめ方も一緒に渡す</small></span><span class="d num">1:16</span></li>
+          <li id="l16"><span class="no">第16回</span><span class="t">計画してから作ってもらう<small>Plan モードで、編集の前に計画を確かめる</small></span><span class="d num">1:10</span></li>
+          <li id="l17"><span class="no">第17回</span><span class="t">ファイルとターミナルをアプリの中で開く</span><span class="d num">1:10</span></li>
+          <li id="l18"><span class="no">第18回</span><span class="t">よくある作業を頼む<small>コードを理解する・バグを直す・テストを書く</small></span><span class="d num">1:08</span></li>
+          <li id="l19"><span class="no">第19回</span><span class="t">前のセッションを見つけて続ける</span><span class="d num">1:05</span></li>
+          <li id="l20"><span class="no">第20回</span><span class="t">会話が長くなったら<small>/context で確かめて、/compact でまとめる</small></span><span class="d num">1:27</span></li>
+        </ol>
+      </div>
+    </div>
+    <p class="total num">全20回・合計 約24分</p>
+    <div class="midcta">
+      <p>まずは第1回を、1分だけ。</p>
+      <div class="row">
+        <a class="btn" href="#sample" data-play><svg class="icon" style="width:22px;height:22px" aria-hidden="true"><use href="#i-play"/></svg>第1回を無料で見る</a>
+        <a class="link" href="#price">料金を見る</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>ほかの学び方と、くらべると</h2>
+      <p>スクールは、質問や添削がついて数か月。この講座は、動画だけで約24分です。</p>
+    </div>
+    <div class="compare-wrap">
+      <table class="compare">
+        <thead>
+          <tr><td></td><th scope="col">スクール・<br>学び放題</th><th scope="col" class="us">この講座</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">料金</th><td><span class="nw">約4万〜</span><span class="nw">25万円</span><small>月額制なら <span class="nw">月1.6万円ほど</span></small></td><td class="us"><b class="num">月¥4,980</b>（税込）<small>年額なら <span class="nw num">¥49,800</span></small></td></tr>
+          <tr><th scope="row">始めるまで</th><td>無料相談や説明会を予約</td><td class="us">予約なし。第1回はこのページで見られます</td></tr>
+          <tr><th scope="row">期間</th><td>3週間〜3か月</td><td class="us">合計 約24分</td></tr>
+          <tr><th scope="row">質問・添削</th><td>あり</td><td class="us">なし（動画だけ）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="compare-note">質問しながら作品まで作りたいなら、スクールが向いています。まず全体をつかみたいなら、この講座から始めてください。</p>
+    <p class="compare-src">スクール・学び放題の料金と期間は、2026年11月に「claude code 講座」で検索して上位に出た講座の公開情報をもとにした目安です。</p>
+
+    <div class="sec-head fit-head">
+      <h2>この講座が向いている人</h2>
+    </div>
+    <div class="fit">
+      <div>
+        <h3>向いている人</h3>
+        <ul>
+          <li>Claude Code を、まだ一度も使ったことがない</li>
+          <li>プログラミングの経験は、少しだけ、またはこれから</li>
+          <li>チャットの AI は使ったことがあり、その先を試したい</li>
+          <li>まず全体をつかんでから、自分のペースで練習したい</li>
+        </ul>
+      </div>
+      <div class="no-fit">
+        <h3>向いていない人</h3>
+        <ul>
+          <li>アプリを作ってストアに公開するところまで学びたい<br><small>（それは次の講座で扱います）</small></li>
+          <li>ターミナル版の細かい設定や使い方を知りたい</li>
+          <li>すでに Claude Code を毎日使っている</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="teacher">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>つくった人</h2>
+    </div>
+    <div class="teacher" style="grid-template-columns:1fr">
+      <div>
+        <h3>Nipporia（ニッポリア）</h3>
+        <p>Claude Code の公式ドキュメントはとても詳しいのですが、はじめての人には、どこから読めばいいのかがわかりにくいと感じました。そこで、最初に必要なことだけを選んで、1本1分ほどの動画にまとめました。</p>
+        <p>Nipporia は、ソフトウェアやアプリの開発、AI の活用、デジタルマーケティングを手がけています。ふだんの仕事でも Claude Code を使っています。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="price">
+  <div class="wrap">
+    <div class="price">
+      <p class="label">メンバーシップ</p>
+      <h2 class="amount num">¥4,980<small>税込／月</small></h2>
+      <p class="until num"><span class="nw">年額なら ¥49,800（税込）。</span><span class="nw">2か月分お得です。</span></p>
+      <p class="after">いつでも解約できます</p>
+
+      <h3>できるようになること</h3>
+      <ul class="gains">
+        <li>Claude Code を準備して、最初のお願いができる</li>
+        <li>変更を確かめてから、受け入れられる</li>
+        <li>気になる行に、コメントで直してもらえる</li>
+        <li>CLAUDE.md で、プロジェクトのルールを伝えられる</li>
+        <li>大きな作業は、計画を確かめてから作ってもらえる</li>
+      </ul>
+
+      <dl class="terms">
+        <div><dt>動画</dt><dd>全20回<span class="nw">（合計 約24分）</span>・<span class="nw">全回字幕つき</span></dd></div>
+        <div><dt>見られる端末</dt><dd>パソコン・スマホ・タブレット</dd></div>
+        <div><dt>含まれるもの</dt><dd>この講座と、続編「Claude Code を自分仕様にする」（全8回）。<span class="nw">これから増える講座と、</span><span class="nw">コミュニティでの質問や投稿。</span></dd></div>
+        <div><dt>見られる期間</dt><dd>メンバーのあいだは、いつでも。<span class="nw">解約しても、次の更新日までは見られます。</span></dd></div>
+        <div><dt>返金</dt><dd>デジタルコンテンツのため、お支払い後の返金はしていません。<span class="nw">解約すれば、次の更新日からは請求されません。</span></dd></div>
+      </dl>
+
+      <p class="need"><b>別に必要なもの</b>Windows か Mac のパソコンと、Claude の有料プランです。Claude の料金は講座代に入っていないので、最新の金額は Anthropic の公式サイトで確かめてください。</p>
+
+      <!-- 公開後、href を視聴サイトの登録ページ（https://<サイトのドメイン>/register）にしてください -->
+      <a class="btn" href="/register?plan=monthly">メンバーになる</a>
+      <p class="pay">お支払い：クレジットカード（Stripe の決済ページ）・<a href="/tokushoho">特定商取引法に基づく表記</a></p>
+    </div>
+
+    <h3 class="steps-title">お申し込みの流れ</h3>
+    <ol class="steps">
+      <li>無料で登録して、第1回を見ます</li>
+      <li>「メンバーになる」から、月額か年額を選んでお支払いをします</li>
+      <li>すぐに全レッスンが見られます。第2回から順番にどうぞ</li>
+    </ol>
+  </div>
+</section>
+
+<section class="band" id="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>よくある質問</h2>
+    </div>
+    <div class="faq-list">
+      <details>
+        <summary>プログラミングの経験がなくても大丈夫ですか？</summary>
+        <p>大丈夫です。もともと、はじめて使う人のための講座です。最初は、やってほしいことをふだんの言葉で伝えるところから。</p>
+      </details>
+      <details>
+        <summary>AI にパソコンのファイルを触らせるのが不安です。</summary>
+        <p>権限モードを「Manual」にしておけば、ファイルを書き換える前に毎回確認してくれます。どこがどう変わるのかを見てから、承認するか拒否するかを選べます。第5回で、実際の画面を見ながら説明しています。</p>
+      </details>
+      <details>
+        <summary>パソコンは必要ですか？</summary>
+        <p>動画は、スマホやタブレットでも見られます。ただ、Claude Code を実際に使って練習するには、Windows か Mac のパソコンが必要です。</p>
+      </details>
+      <details>
+        <summary>アプリの画面が英語でも大丈夫ですか？</summary>
+        <p>ボタンなど、画面の一部は英語で表示されます。動画では、どこを見て、どこを押すのかに印を付けて説明します。Claude Code へのお願いは、日本語で書けます。</p>
+      </details>
+      <details>
+        <summary>Claude の料金は講座の価格に入っていますか？</summary>
+        <p>入っていません。Claude Code を使うには、Claude の有料プランが別に必要です。金額は変わることがあるので、Anthropic の公式サイトで確かめてください。</p>
+      </details>
+      <details>
+        <summary>支払い方法は何がありますか？</summary>
+        <p>クレジットカードで払えます。お支払いは Stripe の決済ページで行います。</p>
+      </details>
+      <details>
+        <summary>申し込んだあと、どうやって見ますか？</summary>
+        <p>お支払いが終わると、そのまま視聴サイトで全レッスンが見られます。同じメールアドレスでログインすれば、スマホやタブレットからも見られます。</p>
+      </details>
+      <details>
+        <summary>動画はいつまで見られますか？</summary>
+        <p>メンバーでいるあいだは、いつでも見られます。解約しても、次の更新日までは見られます。</p>
+      </details>
+      <details>
+        <summary>解約はどうすればいいですか？</summary>
+        <p>視聴サイトの「サブスクリプション管理」から、いつでも解約できます。解約の手数料はかかりません。</p>
+      </details>
+      <details>
+        <summary>返金はできますか？</summary>
+        <p>デジタルコンテンツのため、お支払い後の返金はしていません。そのかわり、第1回は登録なしで、ここで全部見られます。続けられそうか確かめてから申し込んでください。こちらの不具合で見られないときは、info@nipporia.com までご連絡ください。</p>
+      </details>
+      <details>
+        <summary>領収書は出ますか？</summary>
+        <p>お支払いのたびに、Stripe から領収書がメールで届きます。宛名など、ほかに必要なことがあれば info@nipporia.com までご相談ください。</p>
+      </details>
+      <details>
+        <summary>この講座は Anthropic の公式講座ですか？</summary>
+        <p>いいえ。個人が制作した講座です。内容は Claude Code の公式ドキュメント（日本語版）に沿っています。</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap closing">
+    <h2>第1回を見て、続けられそうなら。</h2>
+    <p class="num">月額 ¥4,980（税込）。いつでも解約できます。</p>
+    <div class="row">
+      <a class="btn" href="#price">受講の申し込みへ</a>
+      <a class="link" href="#sample" data-play>第1回をもう一度見る</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <nav>
+      <a href="/tokushoho">特定商取引法に基づく表記</a>
+      <a href="/privacy-policy">プライバシーポリシー</a>
+      <a href="mailto:info@nipporia.com">お問い合わせ</a>
+    </nav>
+    <p>運営：Nipporia（ニッポリア）</p>
+    <p>Claude および Claude Code は Anthropic の商標です。本講座は Anthropic が提供・承認するものではありません。</p>
+  </div>
+</footer>
+
+<div class="buybar" id="buybar" aria-hidden="true">
+  <div class="p num">¥4,980<small>税込／月</small><span>いつでも解約できます</span></div>
+  <a class="btn sm" href="#price" tabindex="-1">申し込む</a>
+</div>
+
+<script>
+(function(){
+  /* 第1回の動画：大きな再生ボタンを出し、押したら再生してコントロールを表示する */
+  var v=document.getElementById('lesson1');
+  var big=document.querySelector('.play');
+  if(v&&big){
+    v.removeAttribute('controls');big.hidden=false;
+    v.addEventListener('play',function(){big.hidden=true;v.setAttribute('controls','');});
+    v.addEventListener('ended',function(){v.removeAttribute('controls');big.hidden=false;});
+  }
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('[data-play]').forEach(function(el){
+    el.addEventListener('click',function(e){
+      if(!v)return;
+      e.preventDefault();
+      if(el!==big)document.getElementById('sample').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});
+      if(el.classList.contains('link'))v.currentTime=0;
+      var p=v.play();if(p&&p.catch)p.catch(function(){});
+    });
+  });
+
+  /* スマホ下部の申し込みバー：ヒーローを過ぎてから、料金の場所に来るまで表示 */
+  var bar=document.getElementById('buybar'),hero=document.getElementById('top'),price=document.getElementById('price');
+  if(!('IntersectionObserver' in window)||!bar)return;
+  var heroOut=false,priceIn=false;
+  function update(){var on=heroOut&&!priceIn;bar.classList.toggle('show',on);bar.setAttribute('aria-hidden',on?'false':'true');bar.querySelector('a').tabIndex=on?0:-1;}
+  new IntersectionObserver(function(e){heroOut=!e[0].isIntersecting;update();}).observe(hero);
+  new IntersectionObserver(function(e){priceIn=e[0].isIntersecting;update();}).observe(price);
+})();
+</script>
+</body>
+</html>

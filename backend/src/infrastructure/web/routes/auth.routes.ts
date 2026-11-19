@@ -28,6 +28,15 @@ const authRouter = (authController: AuthController): Router => {
     authController.login.bind(authController)
   );
 
+  router.get('/config', authController.config.bind(authController));
+
+  router.post(
+    '/google',
+    [body('credential').isString().isLength({ min: 20, max: 8192 })],
+    validateRequest,
+    authController.googleLogin.bind(authController)
+  );
+
   router.post('/refresh', authController.refresh.bind(authController));
   router.post('/logout', authController.logout.bind(authController));
   router.get('/check', authController.checkAuth.bind(authController));

@@ -64,6 +64,18 @@ export const login = createAsyncThunk(
   }
 );
 
+export const loginWithGoogle = createAsyncThunk(
+  'auth/loginWithGoogle',
+  async (credential: string, { rejectWithValue }) => {
+    try {
+      return await authService.googleLogin(credential);
+    } catch (error: any) {
+      const errorMsg = authErrorFrom(error, 'Google でログインできませんでした。もう一度お試しください。');
+      return rejectWithValue({ error: errorMsg });
+    }
+  }
+);
+
 export const logout = createAsyncThunk('auth/logout', async () => {
   await authService.logout();
 });
@@ -130,6 +142,21 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as { error: string })?.error || 'ログインできませんでした。もう一度お試しください。';
+      })
+      // Google sign-in (same result shape as login)
+      .addCase(loginWithGoogle.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginWithGoogle.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.csrfToken = action.payload.csrfToken;
+      })
+      .addCase(loginWithGoogle.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as { error: string })?.error || 'Google でログインできませんでした。もう一度お試しください。';
       })
       // Logout
       .addCase(logout.pending, (state) => {

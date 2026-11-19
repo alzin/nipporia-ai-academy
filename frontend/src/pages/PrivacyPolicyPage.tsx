@@ -21,7 +21,7 @@ import {
 import { ArrowBack } from '@mui/icons-material';
 import { colors } from '../theme/theme';
 
-const LAST_UPDATED = '2025年8月2日';
+const LAST_UPDATED = '2026年11月20日';
 
 const sections = [
     { id: 'introduction', title: 'はじめに' },
@@ -176,6 +176,7 @@ export const PrivacyPolicyPage: React.FC = () => {
                                 <ItemList
                                     items={[
                                         { primary: 'アカウント情報', secondary: '名前、メールアドレス、パスワード、プロフィール写真' },
+                                        { primary: 'Google アカウントでログインした場合', secondary: 'Google から受け取る名前とメールアドレス（Google のパスワードは受け取りません）' },
                                         { primary: 'お支払い情報', secondary: 'クレジットカード情報、請求先住所（Stripe を通じて安全に処理されます）' },
                                         { primary: '学習データ', secondary: '講座の進み具合とクイズの得点' },
                                     ]}
@@ -266,7 +267,8 @@ export const PrivacyPolicyPage: React.FC = () => {
                                         メール：
                                         <Link href="mailto:info@nipporia.com">info@nipporia.com</Link>
                                     </Typography>
-                                    <Typography variant="body1">所在地：東京都</Typography>
+                                    <Typography variant="body1">運営：Nipporia（ニッポリア）</Typography>
+                                    <Typography variant="body1">所在地：埼玉県久喜市久喜中央1丁目9番4-902号</Typography>
                                 </Box>
                             </Section>
 

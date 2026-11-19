@@ -24,7 +24,11 @@ export class UserRepository implements IUserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const entity = await this.repository.findOne({ where: { email } });
+    // Case-insensitive: "Foo@gmail.com" and "foo@gmail.com" are the same account.
+    const entity = await this.repository
+      .createQueryBuilder('user')
+      .where('LOWER(user.email) = LOWER(:email)', { email: email.trim() })
+      .getOne();
     return entity ? this.toDomain(entity) : null;
   }
 

@@ -1,5 +1,8 @@
 // The API sends English error text. These are the Japanese messages shown on screen.
 const AUTH_ERROR_MESSAGES: Array<[RegExp, string]> = [
+  [/google account email is not verified/i, 'この Google アカウントのメールアドレスは確認されていません。別の方法で登録してください。'],
+  [/invalid google credential/i, 'Google での確認がうまくいきませんでした。もう一度お試しください。'],
+  [/google sign-in is not configured/i, 'いまは Google でログインできません。メールアドレスでログインしてください。'],
   [/invalid credentials/i, 'メールアドレスかパスワードが違います。'],
   [/not verified/i, 'メールアドレスの確認がまだです。届いた確認コードを入力してください。'],
   [/inactive/i, 'このアカウントはいま使えません。info@nipporia.com までご連絡ください。'],

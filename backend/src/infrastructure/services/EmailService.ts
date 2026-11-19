@@ -1,4 +1,4 @@
-// SMTP (nodemailer) alternative to ResendEmailService. Not wired by default.
+// SMTP (nodemailer) sender. Used when EMAIL_HOST is set (see dependencies/index.ts).
 import nodemailer from 'nodemailer';
 import { IEmailService } from '../../domain/services/IEmailService';
 import { ENV_CONFIG } from '../config/env.config';
@@ -18,7 +18,8 @@ export class EmailService implements IEmailService {
     this.transporter = nodemailer.createTransport({
       host: ENV_CONFIG.EMAIL_HOST,
       port: ENV_CONFIG.EMAIL_PORT,
-      secure: false,
+      // 465 = TLS from the start (GoDaddy smtpout.secureserver.net); 587 = STARTTLS.
+      secure: ENV_CONFIG.EMAIL_PORT === 465,
       auth: {
         user: ENV_CONFIG.EMAIL_USER,
         pass: ENV_CONFIG.EMAIL_PASS,

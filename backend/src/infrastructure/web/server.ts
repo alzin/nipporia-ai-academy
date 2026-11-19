@@ -1,4 +1,6 @@
 import express, { Application } from 'express';
+import fs from 'fs';
+import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -42,15 +44,28 @@ export class Server {
   }
 
   private configureMiddleware(): void {
+    // Cloud Run sits behind one Google front end: trust it for req.ip / secure cookies.
+    this.app.set('trust proxy', 1);
+
     this.app.use(helmet({
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'"],
-          imgSrc: ["'self'", "data:", "blob:", "https://*.amazonaws.com"], // Allow S3 images
+          // 'unsafe-inline' only for the small Google Tag Manager snippet in index.html.
+          scriptSrc: ["'self'", "'unsafe-inline'", 'https://accounts.google.com/gsi/client', 'https://js.stripe.com', 'https://www.googletagmanager.com'],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://accounts.google.com/gsi/style'],
+          fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+          imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+          // Lesson videos: encrypted HLS pieces from S3, played through blob: URLs.
+          mediaSrc: ["'self'", 'blob:', 'https://*.amazonaws.com'],
+          connectSrc: ["'self'", 'https://*.amazonaws.com', 'https://accounts.google.com/gsi/', 'https://api.stripe.com', 'https://*.google-analytics.com', 'https://www.googletagmanager.com'],
+          frameSrc: ["'self'", 'https://accounts.google.com/gsi/', 'https://js.stripe.com', 'https://hooks.stripe.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://www.googletagmanager.com'],
+          workerSrc: ["'self'", 'blob:'],
+          objectSrc: ["'none'"],
         },
       },
+      // Google sign-in opens a popup that must be able to report back.
+      crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
     }));
 
     this.app.use(cors({
@@ -94,9 +109,46 @@ export class Server {
     this.app.use('/api/feedback', feedbackRouter(this.dependencies.controllers.feedback));
 
     // Health check
-    this.app.get('/', (_, res) => {
-      res.send("OK")
+    this.app.get('/api/health', (_, res) => {
+      res.send('OK');
     });
+
+    // Production: the built React app is served from the same origin as the API
+    // (frontend/build copied to ./public in the Docker image).
+    const webRoot = path.resolve(process.env.WEB_ROOT || path.join(__dirname, '../../../public'));
+    if (fs.existsSync(path.join(webRoot, 'index.html'))) {
+      this.app.use(express.static(webRoot, {
+        index: false,
+        setHeaders: (res, filePath) => {
+          // Hashed build files never change; everything else is revalidated.
+          res.setHeader('Cache-Control', filePath.includes(`${path.sep}static${path.sep}`)
+            ? 'public, max-age=31536000, immutable'
+            : 'no-cache');
+        },
+      }));
+      this.app.use('/api', (_req, res) => {
+        res.status(404).json({ error: 'Not found' });
+      });
+      // Landing pages (static HTML, landing/<name>/ in the repo).
+      const landing = path.join(webRoot, 'claude-code');
+      if (fs.existsSync(path.join(landing, 'index.html'))) {
+        this.app.use('/claude-code', express.static(landing, {
+          setHeaders: (res, filePath) => {
+            res.setHeader('Cache-Control', filePath.endsWith('.html') ? 'no-cache' : 'public, max-age=86400');
+          },
+        }));
+        // The bare domain opens the course landing page; the app itself lives under /dashboard, /classroom ...
+        this.app.get('/', (_req, res) => res.redirect(302, '/claude-code/'));
+      }
+      this.app.get(/.*/, (_req, res) => {
+        res.setHeader('Cache-Control', 'no-cache');
+        res.sendFile(path.join(webRoot, 'index.html'));
+      });
+    } else {
+      this.app.get('/', (_, res) => {
+        res.send('OK');
+      });
+    }
   }
 
   private configureErrorHandling(): void {
@@ -104,6 +156,7 @@ export class Server {
   }
 
   private configureSwagger(): void {
+    if (ENV_CONFIG.NODE_ENV === 'production') return;
     setupSwagger(this.app);
   }
 

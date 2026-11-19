@@ -12,6 +12,7 @@ import {
   Card,
   CardContent,
   Divider,
+  Link as MuiLink,
 } from "@mui/material";
 import { Check, Logout, SwapHoriz } from "@mui/icons-material";
 import { loadStripe } from "@stripe/stripe-js";
@@ -438,6 +439,13 @@ export const SubscriptionPage: React.FC = () => {
           sx={{ mt: 4 }}
         >
           お支払いは Stripe の画面で行います。
+          <br />
+          <MuiLink component={RouterLink} to="/tokushoho" sx={{ display: "inline-flex", alignItems: "center", minHeight: 44, mr: 2 }}>
+            特定商取引法に基づく表記
+          </MuiLink>
+          <MuiLink component={RouterLink} to="/privacy-policy" sx={{ display: "inline-flex", alignItems: "center", minHeight: 44 }}>
+            プライバシーポリシー
+          </MuiLink>
         </Typography>
       </Container>
     </Box>

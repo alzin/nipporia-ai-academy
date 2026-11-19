@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
-import { PasswordStrengthMeter, StepIndicator } from "../components/auth";
+import { GoogleSignInButton, PasswordStrengthMeter, StepIndicator } from "../components/auth";
 import { FormInput } from "../components/ui/FormInput";
 import { useRegistration } from "../hooks/useRegistration";
 import { AuthLayout } from "../components/layout/AuthLayout";
@@ -86,6 +86,8 @@ export const RegistrationPage: React.FC = () => {
               {serverError}
             </Alert>
           )}
+
+          <GoogleSignInButton mode="signup" />
 
           <form onSubmit={handleSubmit(onValidSubmit)} noValidate>
             <Stack spacing={3}>

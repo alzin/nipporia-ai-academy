@@ -1,0 +1,18 @@
+# Builds the production image (site + API). Used by deploy/deploy.sh.
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg
+      - REACT_APP_STRIPE_PUBLIC_KEY=${_STRIPE_PUBLIC_KEY}
+      - -t
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
+substitutions:
+  _IMAGE: ""
+  _STRIPE_PUBLIC_KEY: ""
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8

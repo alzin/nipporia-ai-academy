@@ -9,13 +9,15 @@ export interface CookieConfig {
 export const getAccessTokenCookieConfig = (): CookieConfig => ({
     httpOnly: true,
     secure: ENV_CONFIG.NODE_ENV === 'production',
-    sameSite: ENV_CONFIG.NODE_ENV === 'production' ? 'none' : 'lax'
+    // The site and the API share one origin in production, so 'lax' is enough.
+    sameSite: 'lax'
 });
 
 export const getRefreshTokenCookieConfig = (): CookieConfig => ({
     httpOnly: true,
     secure: ENV_CONFIG.NODE_ENV === 'production',
-    sameSite: ENV_CONFIG.NODE_ENV === 'production' ? 'none' : 'lax'
+    // The site and the API share one origin in production, so 'lax' is enough.
+    sameSite: 'lax'
 });
 
 export const COOKIE_NAMES = {

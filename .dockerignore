@@ -1,0 +1,10 @@
+**/node_modules
+**/build
+**/dist
+**/.env
+**/.env.*
+!**/.env.example
+admin-credentials.txt
+**/*.log
+**/*.tsbuildinfo
+.git

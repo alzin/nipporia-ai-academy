@@ -28,6 +28,16 @@ export const authService = {
     return response.data;
   },
 
+  async googleLogin(credential: string): Promise<LoginResponse & { isNewUser: boolean }> {
+    const response = await api.post('/auth/google', { credential });
+    return response.data;
+  },
+
+  async getConfig(): Promise<{ googleClientId: string | null }> {
+    const response = await api.get('/auth/config');
+    return response.data;
+  },
+
   async logout(): Promise<void> {
     await api.post('/auth/logout');
   },

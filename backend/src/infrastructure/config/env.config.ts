@@ -8,6 +8,9 @@ export const ENV_CONFIG = {
     API_URL: process.env.API_URL,
     FRONTEND_URL: process.env.FRONTEND_URL,
 
+    // Google sign-in (Google Identity Services). Web OAuth client ID; no secret needed.
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+
     // Database Configuration
     DATABASE_URL: process.env.DATABASE_URL,
 

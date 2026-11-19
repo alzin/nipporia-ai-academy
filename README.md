@@ -1,6 +1,6 @@
 # Nipporia AI Academy
 
-Japanese video courses for AI tools, with a member community. The first course is 「Claude Code 入門」 (20 short lessons).
+Japanese video courses for AI tools, with a member community. Live at https://academy.nipporia.com. Courses: 「Claude Code 入門」 (20 short lessons) and 「Claude Code を自分仕様にする」 (8 lessons).
 
 - `frontend/` — React (CRA) + MUI + Redux Toolkit, all UI in Japanese
 - `backend/` — Express + TypeORM + PostgreSQL (Neon), S3 for media, Stripe for subscriptions
@@ -35,7 +35,7 @@ npm ci
 npm start                   # http://localhost:3000
 ```
 
-Without `RESEND_API_KEY` emails are printed to the backend console. Without `STRIPE_SECRET_KEY` payment calls are disabled.
+Email: with `EMAIL_HOST` set, mail goes out over SMTP (production: info@nipporia.com through GoDaddy, `smtpout.secureserver.net:465`); otherwise through Resend if `RESEND_API_KEY` is set; otherwise it is printed to the backend console. Without `STRIPE_SECRET_KEY` payment calls are disabled.
 
 ## Payments (Stripe)
 
@@ -60,3 +60,17 @@ This stops copied links and the browser's download button. It can't stop someone
 ## Seeding the course
 
 `npm run seed:claude-code -- <folder>` uploads the lesson videos and creates both courses: 「Claude Code 入門」 (`<folder>/lesson-NN/out/video.mp4`, 20 lessons) and 「Claude Code を自分仕様にする」 (`<folder>/c2-NN/out/video.mp4`, 8 lessons). Lesson 1 of each is free. Courses that already exist are skipped. Needs `ADMIN_EMAIL` and `ADMIN_PASSWORD`; run `npm run video:hls` afterwards.
+
+## Google sign-in
+
+「Google で続ける」 on the login and registration pages uses Google Identity Services. The browser gets an ID token from Google and posts it to `POST /api/auth/google`; the server checks it against `GOOGLE_CLIENT_ID` and signs the user in, creating the account on first use (email already verified by Google, no password; they can set one later with "forgot password"). Email lookups are case-insensitive, so an existing email account and a Google account with the same address are the same user. The client ID is public and is served to the pages by `GET /api/auth/config`; no client secret is used. The OAuth client lives in GCP project `nipporia-lp-493210` (Google Auth Platform → Clients), with `https://academy.nipporia.com`, `http://localhost:3000` and `http://localhost` as JavaScript origins.
+
+## Production (Cloud Run)
+
+One Cloud Run service, `nipporia-academy` in `asia-northeast1`, project `nipporia-lp-493210`, mapped to **academy.nipporia.com**. The root `Dockerfile` builds the React app and the API into one image; Express serves the site, the API under `/api`, and the course landing page under `/claude-code/` (from `landing/`). The bare domain redirects to `/claude-code/`.
+
+- Deploy: `bash deploy/deploy.sh` (builds with Cloud Build, then deploys). `bash deploy/deploy.sh <tag>` redeploys an existing image.
+- Secrets are in Secret Manager (`academy-*`), read by the service account `nipporia-academy-run`. Nothing secret is in the repo.
+- Live payments: copy the live Stripe secret key, then run `powershell -ExecutionPolicy Bypass -File deploy\enable-stripe-live.ps1`. It stores the key, creates the live prices, customer portal and webhook (`backend/src/scripts/setupStripeLive.ts`), and updates the service. Until then, payment calls are off.
+- S3: the bucket's CORS allows `https://academy.nipporia.com` and `http://localhost:3000` (needed for the encrypted video pieces).
+- The database is the same Neon database used during development. Use a separate Neon branch for local development so test data doesn't land in production.

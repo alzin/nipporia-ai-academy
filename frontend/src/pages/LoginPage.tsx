@@ -21,6 +21,7 @@ import { login, clearError, checkPayment } from '../store/slices/authSlice';
 import { fetchDashboardData } from '../store/slices/dashboardSlice';
 import { AppDispatch, RootState } from '../store/store';
 import { AuthLayout } from '../components/layout/AuthLayout';
+import { GoogleSignInButton } from '../components/auth';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ export const LoginPage: React.FC = () => {
               ログイン
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              登録したメールアドレスとパスワードを入力してください。
+              Google アカウントか、登録したメールアドレスとパスワードでログインできます。
             </Typography>
           </Box>
 
@@ -77,6 +78,8 @@ export const LoginPage: React.FC = () => {
               {error}
             </Alert>
           )}
+
+          <GoogleSignInButton mode="signin" />
 
           <form onSubmit={handleSubmit} noValidate={false}>
             <Stack spacing={3}>

@@ -9,3 +9,6 @@ build/
 
 # Local admin login (never commit)
 admin-credentials.txt
+
+# Local copy of live Stripe IDs (written by deploy/enable-stripe-live.ps1)
+deploy/stripe-live.env
