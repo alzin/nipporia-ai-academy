@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Deploys the production service (academy.nipporia.com) to Cloud Run.
 # Usage: deploy/deploy.sh [image-tag]   (without a tag it builds a new image first)
+# Runs automatically on every push to main (.github/workflows/deploy.yml); can also be run by hand.
 # Secrets live in Secret Manager (academy-*); nothing secret is in this file.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -18,10 +19,18 @@ TAG=${1:-}
 if [ -z "$TAG" ]; then
   TAG=$(date +%Y%m%d-%H%M%S)
   gcloud builds submit . --project $PROJECT --region $REGION --config deploy/cloudbuild.yaml \
+    --service-account "projects/$PROJECT/serviceAccounts/academy-builder@$PROJECT.iam.gserviceaccount.com" \
+    --gcs-source-staging-dir "gs://${PROJECT}_cloudbuild/source" \
     --substitutions "_IMAGE=$REPO:$TAG,_STRIPE_PUBLIC_KEY=$STRIPE_PUBLIC_KEY"
 fi
 
-has_version() { [ -n "$(gcloud secrets versions list "$1" --project $PROJECT --filter=state=ENABLED --limit=1 --format='value(name)' 2>/dev/null)" ]; }
+# Fails the deploy (instead of silently leaving payments off) if the secret can't be read.
+has_version() {
+  local out
+  out=$(gcloud secrets versions list "$1" --project $PROJECT --filter=state=ENABLED --limit=1 --format='value(name)') \
+    || { echo "Cannot read secret $1; stopping." >&2; exit 1; }
+  [ -n "$out" ]
+}
 
 SECRETS="DATABASE_URL=academy-database-url:latest"
 SECRETS+=",JWT_SECRET=academy-jwt-secret:latest,JWT_REFRESH_SECRET=academy-jwt-refresh-secret:latest"
@@ -35,7 +44,7 @@ ENVS="NODE_ENV=production,API_URL=$SITE/api,FRONTEND_URL=$SITE"
 ENVS+=",AWS_REGION=ap-northeast-1,AWS_S3_BUCKET_NAME=nipporia-ai-academy"
 ENVS+=",EMAIL_HOST=smtp.office365.com,EMAIL_PORT=587,EMAIL_USER=info@nipporia.com,EMAIL_FROM=info@nipporia.com"
 ENVS+=",GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,FREE_TRIAL_DAYS=0"
-# Stripe IDs (not secret) from deploy/stripe-live.env, written by enable-stripe-live.ps1
+# Stripe IDs (not secret, committed) from deploy/stripe-live.env, written by enable-stripe-live.ps1
 if [ -f deploy/stripe-live.env ]; then
   while IFS='=' read -r k v; do [ -n "$k" ] && ENVS+=",$k=$v"; done < <(grep -E '^STRIPE_[A-Z_]+=' deploy/stripe-live.env | tr -d '\r')
 fi

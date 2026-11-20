@@ -69,7 +69,7 @@ This stops copied links and the browser's download button. It can't stop someone
 
 One Cloud Run service, `nipporia-academy` in `asia-northeast1`, project `nipporia-lp-493210`, mapped to **academy.nipporia.com**. The root `Dockerfile` builds the React app and the API into one image; Express serves the site, the API under `/api`, and the course landing page under `/claude-code/` (from `landing/`). The bare domain redirects to `/claude-code/`.
 
-- Deploy: `bash deploy/deploy.sh` (builds with Cloud Build, then deploys). `bash deploy/deploy.sh <tag>` redeploys an existing image.
+- Deploy: automatic on every push or merged PR to `main` (`.github/workflows/deploy.yml`, visible in the Actions tab). GitHub signs in to Google Cloud without keys (Workload Identity Federation, provider `github/nipporia-academy`, trusted only for this repo's `main`) as `academy-deployer`; images are built by `academy-builder`. By hand: `bash deploy/deploy.sh` (build + deploy) or `bash deploy/deploy.sh <tag>` (redeploy an existing image).
 - Secrets are in Secret Manager (`academy-*`), read by the service account `nipporia-academy-run`. Nothing secret is in the repo.
 - Live payments: copy the live Stripe secret key, then run `powershell -ExecutionPolicy Bypass -File deploy\enable-stripe-live.ps1`. It stores the key, creates the live prices, customer portal and webhook (`backend/src/scripts/setupStripeLive.ts`), and updates the service. Until then, payment calls are off.
 - S3: the bucket's CORS allows `https://academy.nipporia.com` and `http://localhost:3000` (needed for the encrypted video pieces).
