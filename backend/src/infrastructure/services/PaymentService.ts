@@ -122,6 +122,10 @@ export class PaymentService implements IPaymentService {
         },
       },
       mode: params.mode,
+      // Always charge the JPY price (¥4,980 / ¥49,800) shown on the site and in 特商法,
+      // instead of Stripe converting it to the visitor's local currency.
+      adaptive_pricing: { enabled: false },
+      locale: 'ja',
       success_url: params.successUrl,
       cancel_url: params.cancelUrl,
       automatic_tax: { enabled: ENV_CONFIG.STRIPE_AUTOMATIC_TAX },
@@ -225,6 +229,8 @@ export class PaymentService implements IPaymentService {
     const session = await this.stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
+      adaptive_pricing: { enabled: false },
+      locale: 'ja',
       line_items: [
         {
           price: newPriceId,
