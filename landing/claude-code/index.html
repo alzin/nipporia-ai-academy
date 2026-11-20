@@ -70,6 +70,7 @@ a{color:inherit;text-underline-offset:.25em;text-decoration-thickness:1px}
 .wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
 .num{font-variant-numeric:tabular-nums}
 .nw{white-space:nowrap}
+@media (max-width:480px){dd .nw{white-space:normal}}
 .ib{display:inline-block}
 mark.todo{background:var(--todo);color:#5A4A00;padding:0 .3em;border-radius:4px;font-weight:700}
 .icon{width:1em;height:1em;flex:none}
@@ -96,6 +97,8 @@ mark.todo{background:var(--todo);color:#5A4A00;padding:0 .3em;border-radius:4px;
 .top .login{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);font-weight:700;text-decoration:none}
 .top .login:hover{color:var(--accent-ink);text-decoration:underline}
 .brand{display:inline-flex;align-items:center;gap:10px;min-height:44px;font-weight:700;text-decoration:none;letter-spacing:.04em}
+.brand,.top .login,.btn.sm{white-space:nowrap}
+@media (max-width:400px){.top .wrap{padding:0 14px}.top-actions{gap:10px}.brand{gap:6px;letter-spacing:0;font-size:15px}.brand svg{width:22px;height:22px}.btn.sm{padding:0 14px}}
 
 /* hero */
 .hero{padding:40px 0 64px}
@@ -112,17 +115,7 @@ mark.todo{background:var(--todo);color:#5A4A00;padding:0 .3em;border-radius:4px;
 .player{grid-area:player;margin:0}
 .frame{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#EEE9E1;box-shadow:0 18px 40px -24px rgba(60,40,20,.35)}
 .frame video{width:100%;aspect-ratio:16/9;object-fit:cover}
-.play{
-  position:absolute;left:50%;bottom:7%;transform:translateX(-50%);white-space:nowrap;
-  display:inline-flex;align-items:center;gap:.6em;min-height:48px;padding:0 20px 0 14px;
-  border:0;border-radius:999px;background:var(--accent);color:#fff;font:inherit;font-weight:700;letter-spacing:.04em;cursor:pointer;
-  box-shadow:0 10px 24px -10px rgba(120,50,20,.55);transition:background .15s ease;
-}
-.play:hover{background:var(--accent-ink)}
-.play:focus-visible{border-radius:999px}
-.play .dur{font-weight:500;opacity:.85}
-.play svg{width:26px;height:26px}
-@media (max-width:480px){.lessons li{gap:10px;padding:12px 14px}.lessons .no{min-width:3.2em}.play{min-height:44px;font-size:15px;bottom:5%}.play svg{width:22px;height:22px}}
+@media (max-width:480px){.lessons li{gap:10px;padding:12px 14px}.lessons .no{min-width:3.2em}}
 .player figcaption{font-size:13px;color:var(--muted);padding:10px 2px 0}
 @media (min-width:900px){
   .hero{padding:72px 0 96px}
@@ -219,7 +212,7 @@ section{padding:80px 0}
 .fit .no-fit h3{color:var(--muted)}
 
 /* teacher */
-.teacher{display:grid;gap:20px;align-items:start;max-width:760px}
+.teacher{display:grid;gap:20px;align-items:start;max-width:760px;margin:0 auto}
 @media (min-width:640px){.teacher{grid-template-columns:120px 1fr;gap:28px}}
 .avatar{width:120px;height:120px;border-radius:50%;border:2px dashed #CBBFAE;display:grid;place-items:center;font-size:13px;color:var(--muted);background:var(--card)}
 .teacher h3{font-size:20px}
@@ -251,7 +244,7 @@ section{padding:80px 0}
 .steps-title{max-width:660px;margin:36px auto 0;font-size:15px}
 
 /* faq */
-.faq-list{max-width:760px}
+.faq-list{max-width:760px;margin:0 auto}
 .faq-list details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-top:10px}
 .faq-list summary{cursor:pointer;list-style:none;padding:16px 52px 16px 20px;min-height:56px;font-weight:700;position:relative}
 .faq-list summary::-webkit-details-marker{display:none}
@@ -278,7 +271,7 @@ footer p{text-wrap:pretty}
 .buybar .p small{font-size:12px;font-weight:700;margin-left:2px}
 .buybar .p span{display:block;font-size:11px;font-weight:500;color:var(--muted)}
 @media (min-width:760px){.buybar{display:none}}
-@media (prefers-reduced-motion:reduce){.buybar,.play{transition:none}}
+@media (prefers-reduced-motion:reduce){.buybar{transition:none}}
 </style>
 </head>
 <body>
@@ -310,9 +303,6 @@ footer p{text-wrap:pretty}
         <video id="lesson1" controls preload="metadata" playsinline poster="media/sample-poster.jpg" aria-label="第1回 Claude Codeってなに？（無料公開）">
           <source src="media/sample-lesson01.mp4" type="video/mp4">
         </video>
-        <button class="play" type="button" data-play hidden>
-          <svg aria-hidden="true"><use href="#i-play"/></svg>第1回を再生<span class="dur num">1:10</span>
-        </button>
       </div>
       <figcaption>第1回「Claude Codeってなに？」を、そのまま公開しています。登録も、説明会の予約もいりません。</figcaption>
     </figure>
@@ -695,20 +685,13 @@ footer p{text-wrap:pretty}
 
 <script>
 (function(){
-  /* 第1回の動画：大きな再生ボタンを出し、押したら再生してコントロールを表示する */
   var v=document.getElementById('lesson1');
-  var big=document.querySelector('.play');
-  if(v&&big){
-    v.removeAttribute('controls');big.hidden=false;
-    v.addEventListener('play',function(){big.hidden=true;v.setAttribute('controls','');});
-    v.addEventListener('ended',function(){v.removeAttribute('controls');big.hidden=false;});
-  }
   var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.querySelectorAll('[data-play]').forEach(function(el){
     el.addEventListener('click',function(e){
       if(!v)return;
       e.preventDefault();
-      if(el!==big)document.getElementById('sample').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});
+      document.getElementById('sample').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});
       if(el.classList.contains('link'))v.currentTime=0;
       var p=v.play();if(p&&p.catch)p.catch(function(){});
     });
