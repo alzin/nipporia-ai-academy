@@ -18,16 +18,11 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../store/store";
 import { handlePasteCode } from "../utils/handlePasteCode";
 import { getStoredPlan } from "../utils/planStorage";
+import { trackSignUp } from "../utils/analytics";
 import { StepIndicator } from "../components/auth";
 import { useRegistrationFlowData } from "../utils/registrationFlow";
 import { AuthLayout } from "../components/layout/AuthLayout";
 import { authErrorFrom } from "../utils/authErrors";
-
-declare global {
-  interface Window {
-    dataLayer: any[];
-  }
-}
 
 export const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
@@ -104,52 +99,19 @@ export const VerifyEmailPage: React.FC = () => {
       const storedPlan = getStoredPlan();
 
       // Pass skipTrialSetup=true if user is in paid flow (has pre-selected plan)
-      const response = await api.post("/auth/verify-email-code", {
+      await api.post("/auth/verify-email-code", {
         email,
         code,
         skipTrialSetup: !!storedPlan, // Skip trial setup if going to paid flow
       });
       sessionStorage.removeItem("registration_email");
+      trackSignUp("email");
 
-      // NEW FLOW:
-      // - If user has pre-selected plan: go to subscription page (paid flow)
-      // - If no plan selected: go directly to dashboard (free trial flow)
+      // With a plan picked on the landing page, continue to checkout;
+      // otherwise go to the dashboard.
       if (storedPlan) {
-        // Paid flow: redirect to subscription checkout
         window.location.href = `/subscription?plan=${storedPlan}`;
       } else {
-        // Free trial flow: Fire signup_free_trial event and go to the dashboard
-        window.dataLayer = window.dataLayer || [];
-
-        const trialEventData = {
-          event: "signup_free_trial",
-          value: 0,
-          currency: "JPY",
-          is_trial: true,
-          transaction_id: null,
-          user_id: response.data?.user?.id || null,
-          is_subscription_paid: false,
-          subscription_status: "trial",
-          ecommerce: {
-            transaction_id: null,
-            value: 0,
-            currency: "JPY",
-            items: [
-              {
-                item_id: "trial_free",
-                item_name: "Free Trial (No Credit Card)",
-                item_category: "Subscription",
-                price: 0,
-                quantity: 1,
-              },
-            ],
-          },
-        };
-
-        console.log("📊 DataLayer Push (Free Trial - No CC):", trialEventData);
-        console.table(trialEventData);
-        window.dataLayer.push(trialEventData);
-
         window.location.href = "/dashboard";
       }
 

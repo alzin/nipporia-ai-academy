@@ -7,6 +7,7 @@ import { checkPayment, loginWithGoogle } from "../../store/slices/authSlice";
 import { fetchDashboardData } from "../../store/slices/dashboardSlice";
 import { authService } from "../../services/authService";
 import { getStoredPlan } from "../../utils/planStorage";
+import { trackSignUp } from "../../utils/analytics";
 
 declare global {
   interface Window {
@@ -79,6 +80,9 @@ export const GoogleSignInButton: React.FC<Props> = ({ mode }) => {
           setError((result.payload as { error?: string })?.error || "Google で登録できませんでした。もう一度お試しください。");
         }
         return;
+      }
+      if ((result.payload as { isNewUser?: boolean })?.isNewUser) {
+        trackSignUp("google");
       }
       await dispatch(checkPayment());
       dispatch(fetchDashboardData());

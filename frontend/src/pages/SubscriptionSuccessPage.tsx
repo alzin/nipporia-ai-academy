@@ -14,12 +14,8 @@ import { CheckCircle, ErrorOutline, Home, School } from "@mui/icons-material";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import { getPlanName } from "../utils/plans";
+import { trackPurchase } from "../utils/analytics";
 
-declare global {
-  interface Window {
-    dataLayer: any[];
-  }
-}
 
 // Key for storing processed session IDs
 const PROCESSED_SESSIONS_KEY = "processed_payment_sessions";
@@ -103,108 +99,29 @@ export const SubscriptionSuccessPage: React.FC = () => {
           response.data.status === "paid" &&
           response.data.transactionDetails
         ) {
-          const {
-            transactionDetails,
-            metadata,
-            isFirstEverPaid,
-          } = response.data;
+          const { transactionDetails, isFirstEverPaid } = response.data;
 
           setPlanName(getPlanName(transactionDetails.plan));
 
-          console.log("📊 GA4 Tracking Decision:", {
-            isTrial: transactionDetails.isTrial,
-            isFirstEverPaid,
-            willPushToGA4: transactionDetails.isTrial || isFirstEverPaid,
-          });
+          const currency = (transactionDetails.currency || "JPY").toUpperCase();
+          // Stripe amounts are in the smallest unit; yen has no smaller unit.
+          const value =
+            currency === "JPY"
+              ? transactionDetails.value
+              : transactionDetails.value / 100;
 
-          // --- GTM / Data Layer Logic ---
-          window.dataLayer = window.dataLayer || [];
-
-          // Determine logic based on whether it is a Trial or Paid
-          const isTrial = transactionDetails.isTrial || false;
-          const currency = transactionDetails.currency || "USD";
-
-          let eventValue = transactionDetails.value;
-
-          // Helper: format value (divide by 100 if not JPY)
-          if (currency.toUpperCase() !== "JPY") {
-            eventValue = eventValue / 100;
-          }
-
-          if (isTrial) {
-            // 🟢 CASE 1: FREE TRIAL (Value 0)
-            const trialEventData = {
-              event: "signup_free_trial",
-              value: 0,
-              currency: currency,
-              is_trial: true,
-              transaction_id: transactionDetails.transactionId,
-              ecommerce: {
-                transaction_id: transactionDetails.transactionId,
-                value: 0, // Explicitly 0
-                currency: currency,
-                items: [
-                  {
-                    item_id: `trial_${transactionDetails.plan}`,
-                    item_name: transactionDetails.name || "Free Trial",
-                    item_category: "Subscription",
-                    price: 0,
-                    quantity: 1,
-                  },
-                ],
-              },
-              user_id: metadata?.userId || null,
-              is_subscription_paid: false,
-              subscription_status: "trial",
-            };
-
-            console.log("📊 DataLayer Push (Free Trial):", trialEventData);
-            window.dataLayer.push(trialEventData);
-          } else if (isFirstEverPaid) {
-            // 🟢 CASE 2: FIRST-TIME PAID SUBSCRIPTION (fires only ONCE per user, ever)
-            // This is critical for GA4 tracking - prevents duplicate events on renewal/re-subscription
-            const paidEventData = {
-              event: "subscription_paid",
-              value: eventValue,
-              currency: currency,
-              subscription_plan: transactionDetails.plan,
-              subscription_name: transactionDetails.name,
-              billing_interval: transactionDetails.interval || "monthly",
-              is_trial: false,
-              transaction_id: transactionDetails.transactionId,
-              user_id: metadata?.userId || null,
-              ecommerce: {
-                transaction_id: transactionDetails.transactionId,
-                value: eventValue,
-                currency: currency,
-                items: [
-                  {
-                    item_id: `subscription_${transactionDetails.plan}`,
-                    item_name: transactionDetails.name,
-                    item_category: "Subscription",
-                    price: eventValue,
-                    quantity: 1,
-                  },
-                ],
-              },
-            };
-
-            console.log(
-              "📊 DataLayer Push (First-Time Paid - ONE TIME ONLY):",
-              paidEventData,
-            );
-            window.dataLayer.push(paidEventData);
-          } else {
-            // 🔴 CASE 3: SUBSEQUENT PAYMENT (renewal, re-subscription after cancel)
-            // Do NOT push to dataLayer - user has already been tracked
-            console.log(
-              "ℹ️ Subsequent payment detected. NOT pushing to dataLayer (user already tracked).",
-            );
-            console.log("Payment details:", {
-              transaction_id: transactionDetails.transactionId,
-              value: eventValue,
-              currency: currency,
+          // Count only a user's first paid subscription, not renewals or re-subscriptions.
+          if (
+            !transactionDetails.isTrial &&
+            isFirstEverPaid &&
+            transactionDetails.transactionId
+          ) {
+            trackPurchase({
+              transactionId: transactionDetails.transactionId,
+              value,
+              currency,
               plan: transactionDetails.plan,
+              name: transactionDetails.name,
             });
           }
         }

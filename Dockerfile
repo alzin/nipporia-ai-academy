@@ -9,12 +9,10 @@ RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
 # Stripe publishable key (pk_...) is public; it is baked into the bundle.
 ARG REACT_APP_STRIPE_PUBLIC_KEY=""
-ARG REACT_APP_GTM_ID=""
 ENV CI=false \
     GENERATE_SOURCEMAP=false \
     REACT_APP_API_URL=/api \
-    REACT_APP_STRIPE_PUBLIC_KEY=$REACT_APP_STRIPE_PUBLIC_KEY \
-    REACT_APP_GTM_ID=$REACT_APP_GTM_ID
+    REACT_APP_STRIPE_PUBLIC_KEY=$REACT_APP_STRIPE_PUBLIC_KEY
 RUN npm run build
 
 # ---------- api ----------

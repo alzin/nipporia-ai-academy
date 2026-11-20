@@ -51,15 +51,16 @@ export class Server {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          // 'unsafe-inline' only for the small Google Tag Manager snippet in index.html.
-          scriptSrc: ["'self'", "'unsafe-inline'", 'https://accounts.google.com/gsi/client', 'https://js.stripe.com', 'https://www.googletagmanager.com'],
+          // 'unsafe-inline' only for the small Google tag and Clarity snippets in index.html.
+          // Google tag hosts: GA4 + Google Ads conversion tracking. Clarity: heatmaps/recordings.
+          scriptSrc: ["'self'", "'unsafe-inline'", 'https://accounts.google.com/gsi/client', 'https://js.stripe.com', 'https://www.googletagmanager.com', 'https://www.googleadservices.com', 'https://googleads.g.doubleclick.net', 'https://www.google.com', 'https://www.clarity.ms', 'https://*.clarity.ms'],
           styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://accounts.google.com/gsi/style'],
           fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
           imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
           // Lesson videos: encrypted HLS pieces from S3, played through blob: URLs.
           mediaSrc: ["'self'", 'blob:', 'https://*.amazonaws.com'],
-          connectSrc: ["'self'", 'https://*.amazonaws.com', 'https://accounts.google.com/gsi/', 'https://api.stripe.com', 'https://*.google-analytics.com', 'https://www.googletagmanager.com'],
-          frameSrc: ["'self'", 'https://accounts.google.com/gsi/', 'https://js.stripe.com', 'https://hooks.stripe.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://www.googletagmanager.com'],
+          connectSrc: ["'self'", 'https://*.amazonaws.com', 'https://accounts.google.com/gsi/', 'https://api.stripe.com', 'https://*.google-analytics.com', 'https://*.analytics.google.com', 'https://www.googletagmanager.com', 'https://www.google.com', 'https://google.com', 'https://googleads.g.doubleclick.net', 'https://www.googleadservices.com', 'https://pagead2.googlesyndication.com', 'https://*.clarity.ms'],
+          frameSrc: ["'self'", 'https://accounts.google.com/gsi/', 'https://js.stripe.com', 'https://hooks.stripe.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://www.googletagmanager.com', 'https://td.doubleclick.net', 'https://bid.g.doubleclick.net'],
           workerSrc: ["'self'", 'blob:'],
           objectSrc: ["'none'"],
         },

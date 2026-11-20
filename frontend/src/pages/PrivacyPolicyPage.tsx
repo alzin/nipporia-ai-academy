@@ -28,6 +28,7 @@ const sections = [
     { id: 'information-collection', title: '収集する情報' },
     { id: 'use-of-information', title: '情報の利用目的' },
     { id: 'sharing', title: '情報の共有' },
+    { id: 'external', title: '外部送信（アクセス解析・広告）' },
     { id: 'security', title: 'データの安全管理' },
     { id: 'rights', title: 'お客様の権利' },
     { id: 'contact', title: 'お問い合わせ' },
@@ -218,6 +219,39 @@ export const PrivacyPolicyPage: React.FC = () => {
                                         { primary: 'ご本人の同意がある場合', secondary: 'お客様が情報の共有にはっきり同意した場合' },
                                     ]}
                                 />
+                            </Section>
+
+                            <Section id="external" title="外部送信（アクセス解析・広告）">
+                                <Typography variant="body1" sx={{ mb: 1 }}>
+                                    サイトの改善と広告の効果測定のため、次の外部サービスのタグを使っています。ページを開くと、お客様の端末から各社に情報が送られます。
+                                </Typography>
+                                <ItemList
+                                    items={[
+                                        {
+                                            primary: 'Google アナリティクス（Google LLC）',
+                                            secondary: '送る情報：見たページ、参照元、端末・ブラウザの種類、おおよその地域、Cookie などの識別子、申し込みの有無と金額。目的：サイトの利用状況を分析するため',
+                                        },
+                                        {
+                                            primary: 'Google 広告（Google LLC）',
+                                            secondary: '送る情報：広告のクリック情報、Cookie などの識別子、申し込みの有無と金額。目的：広告の成果を測り、広告を改善するため',
+                                        },
+                                        {
+                                            primary: 'Microsoft Clarity（Microsoft Corporation）',
+                                            secondary: '送る情報：ページ上のクリックやスクロールなどの操作、端末・ブラウザの種類、Cookie などの識別子。入力欄の内容は送りません。目的：使いにくい箇所を見つけて直すため',
+                                        },
+                                    ]}
+                                />
+                                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                                    Google アナリティクスの計測を止めたいときは
+                                    <Link href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">オプトアウト アドオン</Link>
+                                    、広告の設定は
+                                    <Link href="https://myadcenter.google.com/" target="_blank" rel="noopener">マイ アド センター</Link>
+                                    で変えられます。各社の取り扱いは
+                                    <Link href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google のプライバシーポリシー</Link>
+                                    と
+                                    <Link href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">Microsoft のプライバシーに関する声明</Link>
+                                    をご覧ください。
+                                </Typography>
                             </Section>
 
                             <Section id="security" title="データの安全管理">

@@ -34,6 +34,7 @@ import {
   MembershipPlanId,
   formatYen,
 } from "../utils/plans";
+import { trackBeginCheckout } from "../utils/analytics";
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY!);
 
@@ -175,6 +176,7 @@ export const SubscriptionPage: React.FC = () => {
       // Checkout redirect takes priority over a direct change: when a checkout
       // session is created (e.g. no card on file), the user must pay on Stripe first.
       if (response.sessionId) {
+        trackBeginCheckout(planId);
         const result = await stripe.redirectToCheckout({
           sessionId: response.sessionId,
         });
