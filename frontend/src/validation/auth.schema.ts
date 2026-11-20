@@ -8,7 +8,7 @@ export const registrationSchema = z
     confirmPassword: z.string(),
     // FIXED: Use z.boolean() + refine instead of z.literal()
     agreeToTerms: z.boolean().refine((val) => val === true, {
-      message: "プライバシーポリシーへの同意が必要です",
+      message: "利用規約とプライバシーポリシーへの同意が必要です",
     }),
     marketingEmails: z.boolean().optional(),
   })

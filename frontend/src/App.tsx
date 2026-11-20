@@ -33,6 +33,7 @@ import { CommunityPage } from './pages/CommunityPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { CommerceDisclosurePage } from './pages/CommerceDisclosurePage';
+import { TermsPage } from './pages/TermsPage';
 import { SubscriptionPage } from './pages/SubscriptionPage';
 
 // Components
@@ -247,6 +248,7 @@ function AppContent() {
 
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/tokushoho" element={<CommerceDisclosurePage />} />
+        <Route path="/terms" element={<TermsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>

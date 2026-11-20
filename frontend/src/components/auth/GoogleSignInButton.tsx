@@ -138,7 +138,7 @@ export const GoogleSignInButton: React.FC<Props> = ({ mode }) => {
       <Box ref={buttonRef} sx={{ display: "flex", justifyContent: "center", minHeight: 44 }} />
       {mode === "signup" && (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
-          Google で登録すると、プライバシーポリシーに同意したものとします。
+          Google で登録すると、利用規約とプライバシーポリシーに同意したものとします。
         </Typography>
       )}
       <Divider sx={{ mt: 3 }}>

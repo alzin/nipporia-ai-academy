@@ -155,6 +155,10 @@ export const RegistrationPage: React.FC = () => {
                   }
                   label={
                     <Typography variant="body2" sx={{ pt: 0.75 }}>
+                      <Link component={RouterLink} to="/terms" target="_blank" rel="noopener noreferrer">
+                        利用規約
+                      </Link>
+                      と
                       <Link
                         component={RouterLink}
                         to="/privacy-policy"

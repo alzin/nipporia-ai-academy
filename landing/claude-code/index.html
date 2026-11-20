@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Claude Code 入門｜ターミナルなしで始める動画講座</title>
-<meta name="description" content="Claude Code をはじめて使う人のための動画講座。アプリの準備から、最初のお願い、変更の確かめ方まで。1本60〜90秒の動画で、ひとつずつ覚えます。第1回は無料で見られます。">
+<meta name="description" content="Claude Code をはじめて使う人のための動画講座。アプリの準備から、最初のお願い、変更の確かめ方まで。続編「Claude Code を自分仕様にする」もメンバーなら見られます。1本60〜90秒、第1回は無料です。">
 <meta property="og:title" content="Claude Code 入門｜ターミナルなしで始める動画講座">
 <meta property="og:description" content="1本60〜90秒の動画で、Claude Code の使い方をゼロから順番に。字幕つき。第1回は無料。">
 <meta property="og:image" content="https://academy.nipporia.com/claude-code/media/sample-poster.jpg">
@@ -169,8 +169,13 @@ section{padding:80px 0}
 
 /* curriculum */
 .chapters{display:grid;gap:28px}
-.chapter h3{display:flex;align-items:baseline;gap:12px;font-size:18px;margin-bottom:10px}
-.chapter h3 small{font-size:13px;font-weight:500;color:var(--muted)}
+.course+.course{margin-top:48px;padding-top:36px;border-top:1px dashed var(--line)}
+.course-head{margin-bottom:22px}
+.course-head h3{font-size:clamp(20px,3.2vw,24px);font-weight:900}
+.course-head .cno{display:block;font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--accent-ink);margin-bottom:2px}
+.course-head p{margin-top:6px;color:var(--muted);font-size:15px}
+.chapter h4{display:flex;align-items:baseline;gap:12px;font-size:18px;margin:0 0 10px;line-height:1.45}
+.chapter h4 small{font-size:13px;font-weight:500;color:var(--muted)}
 .lessons{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--card);overflow:hidden}
 .lessons li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 18px;border-top:1px solid var(--line)}
 .lessons li:first-child{border-top:0}
@@ -295,7 +300,7 @@ footer p{text-wrap:pretty}
       <figcaption>第1回「Claude Codeってなに？」を、そのまま公開しています。登録も、説明会の予約もいりません。</figcaption>
     </figure>
 
-    <p class="lead">アプリの準備から、最初のお願い、変更の<span class="nw">確かめ方</span>、計画の立て方まで。1本60〜90秒の動画で、ひとつずつ覚えていきます。</p>
+    <p class="lead">アプリの準備から、最初のお願い、変更の<span class="nw">確かめ方</span>、計画の立て方まで。慣れてきたら、続編でスキルやフックを足して、自分の仕事に合わせます。1本60〜90秒の動画で、ひとつずつ覚えていきます。</p>
 
     <div class="cta">
       <div class="row">
@@ -306,8 +311,8 @@ footer p{text-wrap:pretty}
     </div>
 
     <ul class="facts">
-      <li>全<b class="num">20</b>回</li>
-      <li>合計 約<b class="num">24</b>分</li>
+      <li><b class="num">2</b>講座・全<b class="num">28</b>回</li>
+      <li>合計 約<b class="num">35</b>分</li>
       <li>1本<b class="num">60〜90</b>秒</li>
       <li>字幕つき</li>
       <li>第1回は無料</li>
@@ -340,7 +345,7 @@ footer p{text-wrap:pretty}
       <div class="worry">
         <q>長い講座は、最後まで続かない</q>
         <p>1本は60〜90秒。1回で覚えることは1つだけです。通勤中や休み時間に、1本ずつ進められます。</p>
-        <a class="jump" href="#curriculum">全20回を見る</a>
+        <a class="jump" href="#curriculum">全28回を見る</a>
       </div>
     </div>
     <div class="bridge">
@@ -392,12 +397,17 @@ footer p{text-wrap:pretty}
 <section class="band" id="curriculum">
   <div class="wrap">
     <div class="sec-head">
-      <h2>全20回の内容</h2>
-      <p>1回1テーマ。上から順に見ていけば大丈夫です。第2部は、第1部を見終えてから進む内容です。</p>
+      <h2>2つの講座、全28回の内容</h2>
+      <p>1回1テーマ。まず「Claude Code 入門」を上から順に。見終えたら、続編の「自分仕様にする」へ進みます。メンバーなら、どちらも全部見られます。</p>
+    </div>
+    <div class="course">
+    <div class="course-head">
+      <h3><span class="cno">講座 1</span>Claude Code 入門</h3>
+      <p>全20回・合計 約24分。はじめて使う人のための講座です。</p>
     </div>
     <div class="chapters">
       <div class="chapter">
-        <h3>はじめる準備<small>第1〜4回</small></h3>
+        <h4>はじめる準備<small>第1〜4回</small></h4>
         <ol class="lessons">
           <li id="l1"><span class="no">第1回</span><span class="t"><span class="nw">Claude Code</span>ってなに？</span><button class="free" type="button" data-play><svg aria-hidden="true"><use href="#i-play"/></svg>無料で見る</button></li>
           <li id="l2"><span class="no">第2回</span><span class="t"><span class="nw">Claude Code</span>はどこで使える？</span><span class="d num">1:06</span></li>
@@ -406,7 +416,7 @@ footer p{text-wrap:pretty}
         </ol>
       </div>
       <div class="chapter">
-        <h3>頼む・確かめる・直してもらう<small>第5〜11回</small></h3>
+        <h4>頼む・確かめる・直してもらう<small>第5〜11回</small></h4>
         <ol class="lessons" start="5">
           <li id="l5"><span class="no">第5回</span><span class="t">変更を確認して受け入れる</span><span class="d num">1:10</span></li>
           <li id="l6"><span class="no">第6回</span><span class="t">作業の途中で指示を変える</span><span class="d num">1:01</span></li>
@@ -418,7 +428,7 @@ footer p{text-wrap:pretty}
         </ol>
       </div>
       <div class="chapter">
-        <h3>もっと便利に・第1部のまとめ<small>第12〜14回</small></h3>
+        <h4>もっと便利に・第1部のまとめ<small>第12〜14回</small></h4>
         <ol class="lessons" start="12">
           <li id="l12"><span class="no">第12回</span><span class="t">CLAUDE.md でプロジェクトのルールを伝える<small>毎回の説明を、ファイルに書いておく</small></span><span class="d num">1:23</span></li>
           <li id="l13"><span class="no">第13回</span><span class="t">いくつかの作業を同時に進める</span><span class="d num">1:03</span></li>
@@ -426,7 +436,7 @@ footer p{text-wrap:pretty}
         </ol>
       </div>
       <div class="chapter">
-        <h3>第2部 もっと上手に使う<small>第15〜20回</small></h3>
+        <h4>第2部 もっと上手に使う<small>第15〜20回</small></h4>
         <ol class="lessons" start="15">
           <li id="l15"><span class="no">第15回</span><span class="t">上手な頼み方<small>具体的に頼んで、確かめ方も一緒に渡す</small></span><span class="d num">1:16</span></li>
           <li id="l16"><span class="no">第16回</span><span class="t">計画してから作ってもらう<small>Plan モードで、編集の前に計画を確かめる</small></span><span class="d num">1:10</span></li>
@@ -437,7 +447,28 @@ footer p{text-wrap:pretty}
         </ol>
       </div>
     </div>
-    <p class="total num">全20回・合計 約24分</p>
+    </div>
+    <div class="course" id="course2">
+    <div class="course-head">
+      <h3><span class="cno">講座 2・続編</span>Claude Code を自分仕様にする</h3>
+      <p>全8回・合計 約11分。入門を見終えた人が、Claude Code を自分の仕事に合わせるための講座です。</p>
+    </div>
+    <div class="chapters">
+      <div class="chapter">
+        <ol class="lessons">
+          <li id="c2-l1"><span class="no">第1回</span><span class="t">自分仕様にする道具の全体図<small>CLAUDE.md・スキル・MCP・サブエージェント・フック・プラグイン</small></span><span class="d num">1:30</span></li>
+          <li id="c2-l2"><span class="no">第2回</span><span class="t">自分のスキルを作る<small>SKILL.md に手順を書いて、/名前 で呼び出す</small></span><span class="d num">1:30</span></li>
+          <li id="c2-l3"><span class="no">第3回</span><span class="t">コネクタでほかのツールとつなぐ<small>カレンダーやチャットを、Claude から直接使う</small></span><span class="d num">1:23</span></li>
+          <li id="c2-l4"><span class="no">第4回</span><span class="t">プラグインを入れる<small>入れる前に、出どころと中身を確かめる</small></span><span class="d num">1:23</span></li>
+          <li id="c2-l5"><span class="no">第5回</span><span class="t">権限のルールを決める<small>allow / ask / deny を settings.json に書く</small></span><span class="d num">1:28</span></li>
+          <li id="c2-l6"><span class="no">第6回</span><span class="t">サブエージェントに任せる<small>別の会話で作業して、要約だけを返してもらう</small></span><span class="d num">1:29</span></li>
+          <li id="c2-l7"><span class="no">第7回</span><span class="t">フックで自動化する<small>決まったタイミングで、必ず動くコマンド</small></span><span class="d num">1:22</span></li>
+          <li id="c2-l8"><span class="no">第8回</span><span class="t">ふりかえりと次の一歩<small>どの道具から足すかのまとめ</small></span><span class="d num">1:18</span></li>
+        </ol>
+      </div>
+    </div>
+    </div>
+    <p class="total num">2講座・全28回・合計 約35分</p>
     <div class="midcta">
       <p>まずは第1回を、1分だけ。</p>
       <div class="row">
@@ -452,7 +483,7 @@ footer p{text-wrap:pretty}
   <div class="wrap">
     <div class="sec-head">
       <h2>ほかの学び方と、くらべると</h2>
-      <p>スクールは、質問や添削がついて数か月。この講座は、動画だけで約24分です。</p>
+      <p>スクールは、質問や添削がついて数か月。この講座は、動画だけで2講座・合計約35分です。</p>
     </div>
     <div class="compare-wrap">
       <table class="compare">
@@ -462,7 +493,7 @@ footer p{text-wrap:pretty}
         <tbody>
           <tr><th scope="row">料金</th><td><span class="nw">約4万〜</span><span class="nw">25万円</span><small>月額制なら <span class="nw">月1.6万円ほど</span></small></td><td class="us"><b class="num">月¥4,980</b>（税込）<small>年額なら <span class="nw num">¥49,800</span></small></td></tr>
           <tr><th scope="row">始めるまで</th><td>無料相談や説明会を予約</td><td class="us">予約なし。第1回はこのページで見られます</td></tr>
-          <tr><th scope="row">期間</th><td>3週間〜3か月</td><td class="us">合計 約24分</td></tr>
+          <tr><th scope="row">期間</th><td>3週間〜3か月</td><td class="us">2講座で 合計 約35分</td></tr>
           <tr><th scope="row">質問・添削</th><td>あり</td><td class="us">なし（動画だけ）</td></tr>
         </tbody>
       </table>
@@ -481,6 +512,7 @@ footer p{text-wrap:pretty}
           <li>プログラミングの経験は、少しだけ、またはこれから</li>
           <li>チャットの AI は使ったことがあり、その先を試したい</li>
           <li>まず全体をつかんでから、自分のペースで練習したい</li>
+          <li>慣れてきたら、スキルやフックで自分の仕事に合わせたい</li>
         </ul>
       </div>
       <div class="no-fit">
@@ -488,7 +520,7 @@ footer p{text-wrap:pretty}
         <ul>
           <li>アプリを作ってストアに公開するところまで学びたい<br><small>（それは次の講座で扱います）</small></li>
           <li>ターミナル版の細かい設定や使い方を知りたい</li>
-          <li>すでに Claude Code を毎日使っている</li>
+          <li>すでに Claude Code を毎日使っていて、スキルやフックも自分で書いている</li>
         </ul>
       </div>
     </div>
@@ -525,12 +557,13 @@ footer p{text-wrap:pretty}
         <li>気になる行に、コメントで直してもらえる</li>
         <li>CLAUDE.md で、プロジェクトのルールを伝えられる</li>
         <li>大きな作業は、計画を確かめてから作ってもらえる</li>
+        <li>スキルやフックを足して、自分の仕事に合わせられる</li>
       </ul>
 
       <dl class="terms">
-        <div><dt>動画</dt><dd>全20回<span class="nw">（合計 約24分）</span>・<span class="nw">全回字幕つき</span></dd></div>
+        <div><dt>動画</dt><dd>2講座・全28回<span class="nw">（合計 約35分）</span>・<span class="nw">全回字幕つき</span></dd></div>
         <div><dt>見られる端末</dt><dd>パソコン・スマホ・タブレット</dd></div>
-        <div><dt>含まれるもの</dt><dd>この講座と、続編「Claude Code を自分仕様にする」（全8回）。<span class="nw">これから増える講座と、</span><span class="nw">コミュニティでの質問や投稿。</span></dd></div>
+        <div><dt>含まれるもの</dt><dd>「Claude Code 入門」（全20回）と、続編「Claude Code を自分仕様にする」（全8回）。<span class="nw">これから増える講座と、</span><span class="nw">コミュニティでの質問や投稿。</span></dd></div>
         <div><dt>見られる期間</dt><dd>メンバーのあいだは、いつでも。<span class="nw">解約しても、次の更新日までは見られます。</span></dd></div>
         <div><dt>返金</dt><dd>デジタルコンテンツのため、お支払い後の返金はしていません。<span class="nw">解約すれば、次の更新日からは請求されません。</span></dd></div>
       </dl>
@@ -546,7 +579,7 @@ footer p{text-wrap:pretty}
     <ol class="steps">
       <li>無料で登録して、第1回を見ます</li>
       <li>「メンバーになる」から、月額か年額を選んでお支払いをします</li>
-      <li>すぐに全レッスンが見られます。第2回から順番にどうぞ</li>
+      <li>すぐに、2つの講座の全レッスンが見られます。入門の第2回から順番にどうぞ</li>
     </ol>
   </div>
 </section>
@@ -564,6 +597,10 @@ footer p{text-wrap:pretty}
       <details>
         <summary>AI にパソコンのファイルを触らせるのが不安です。</summary>
         <p>権限モードを「Manual」にしておけば、ファイルを書き換える前に毎回確認してくれます。どこがどう変わるのかを見てから、承認するか拒否するかを選べます。第5回で、実際の画面を見ながら説明しています。</p>
+      </details>
+      <details>
+        <summary>2つの講座は、どの順番で見ればいいですか？</summary>
+        <p>「Claude Code 入門」から見てください。続編の「Claude Code を自分仕様にする」は、入門を見終えた人向けの内容です。メンバーなら、どちらも追加の料金なしで見られます。</p>
       </details>
       <details>
         <summary>パソコンは必要ですか？</summary>
@@ -603,7 +640,7 @@ footer p{text-wrap:pretty}
       </details>
       <details>
         <summary>この講座は Anthropic の公式講座ですか？</summary>
-        <p>いいえ。個人が制作した講座です。内容は Claude Code の公式ドキュメント（日本語版）に沿っています。</p>
+        <p>いいえ。Nipporia（ニッポリア）が制作した講座です。内容は Claude Code の公式ドキュメント（日本語版）に沿っています。</p>
       </details>
     </div>
   </div>
@@ -625,6 +662,7 @@ footer p{text-wrap:pretty}
   <div class="wrap">
     <nav>
       <a href="/tokushoho">特定商取引法に基づく表記</a>
+      <a href="/terms">利用規約</a>
       <a href="/privacy-policy">プライバシーポリシー</a>
       <a href="mailto:info@nipporia.com">お問い合わせ</a>
     </nav>

@@ -443,6 +443,9 @@ export const SubscriptionPage: React.FC = () => {
           <MuiLink component={RouterLink} to="/tokushoho" sx={{ display: "inline-flex", alignItems: "center", minHeight: 44, mr: 2 }}>
             特定商取引法に基づく表記
           </MuiLink>
+          <MuiLink component={RouterLink} to="/terms" sx={{ display: "inline-flex", alignItems: "center", minHeight: 44, mr: 2 }}>
+            利用規約
+          </MuiLink>
           <MuiLink component={RouterLink} to="/privacy-policy" sx={{ display: "inline-flex", alignItems: "center", minHeight: 44 }}>
             プライバシーポリシー
           </MuiLink>

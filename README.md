@@ -73,4 +73,4 @@ One Cloud Run service, `nipporia-academy` in `asia-northeast1`, project `nippori
 - Secrets are in Secret Manager (`academy-*`), read by the service account `nipporia-academy-run`. Nothing secret is in the repo.
 - Live payments: copy the live Stripe secret key, then run `powershell -ExecutionPolicy Bypass -File deploy\enable-stripe-live.ps1`. It stores the key, creates the live prices, customer portal and webhook (`backend/src/scripts/setupStripeLive.ts`), and updates the service. Until then, payment calls are off.
 - S3: the bucket's CORS allows `https://academy.nipporia.com` and `http://localhost:3000` (needed for the encrypted video pieces).
-- The database is the same Neon database used during development. Use a separate Neon branch for local development so test data doesn't land in production.
+- Database: Neon project "Nipporia AI Academy". Branch `production` is the live database (its URL is only in Secret Manager); branch `dev` (a copy made on 2026-11-20) is for local development, so put the `dev` branch URL in `backend/.env`. History retention on the current plan is 1 day, so point-in-time restore only reaches back one day.
