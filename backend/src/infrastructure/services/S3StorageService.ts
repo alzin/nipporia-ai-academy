@@ -3,6 +3,10 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ENV_CONFIG } from '../config/env.config';
+import { MediaAccessError } from '../../domain/errors/MediaAccessError';
+
+/** Who may delete what: a member only their own community/<ownerId>/ folder, an admin any key. */
+export type MediaDeleteScope = { ownerId: string } | { anyKey: true };
 
 export class S3StorageService {
     private s3: AWS.S3;
@@ -300,13 +304,121 @@ export class S3StorageService {
     }
 
     /**
-     * Delete community media file
+     * Return the object key for a URL that points at our bucket
+     * (virtual-hosted or path-style), or null for anything else.
+     */
+    static keyFromBucketUrl(mediaUrl: unknown): string | null {
+        if (typeof mediaUrl !== 'string') {
+            return null;
+        }
+
+        let url: URL;
+        try {
+            url = new URL(mediaUrl);
+        } catch {
+            return null;
+        }
+
+        if (url.protocol !== 'https:') {
+            return null;
+        }
+
+        const host = url.hostname.toLowerCase();
+        const bucket = (ENV_CONFIG.AWS_S3_BUCKET_NAME || '').toLowerCase();
+        if (!bucket) {
+            return null;
+        }
+        const region = (ENV_CONFIG.AWS_REGION || '').toLowerCase();
+        const bucketHosts = [`${bucket}.s3.amazonaws.com`, `${bucket}.s3.${region}.amazonaws.com`, `${bucket}.s3-${region}.amazonaws.com`];
+        const pathStyleHosts = ['s3.amazonaws.com', `s3.${region}.amazonaws.com`, `s3-${region}.amazonaws.com`];
+
+        let encodedKey = url.pathname.substring(1);
+        if (bucketHosts.includes(host)) {
+            // key is the whole path
+        } else if (pathStyleHosts.includes(host) && encodedKey.startsWith(`${bucket}/`)) {
+            encodedKey = encodedKey.substring(bucket.length + 1);
+        } else {
+            return null;
+        }
+
+        let key: string;
+        try {
+            key = decodeURIComponent(encodedKey);
+        } catch {
+            return null;
+        }
+
+        return key || null;
+    }
+
+    /**
+     * True when the key is inside the member's own upload folder: community/<userId>/...
+     */
+    static isUserMediaKey(key: string, userId: string): boolean {
+        if (!userId || /[\\/]/.test(userId)) {
+            return false;
+        }
+        const prefix = `community/${userId}/`;
+        if (!key.startsWith(prefix) || key.length === prefix.length) {
+            return false;
+        }
+        return !key.includes('\\') && !key.split('/').some(segment => segment === '.' || segment === '..');
+    }
+
+    /**
+     * Members may attach only their own uploads to a post or feedback. Without this, a member could
+     * put any bucket URL (a paid lesson video) on a post: the API would hand out a presigned link
+     * to everyone who reads the post, and deleting the post would delete that object.
+     * Admins are not limited. URLs listed in `alreadyAttached` (an unchanged post) are allowed.
+     */
+    static assertMemberMediaUrls(
+        mediaUrls: unknown,
+        user: { userId: string; userRole?: string },
+        alreadyAttached: string[] = []
+    ): void {
+        if (mediaUrls === undefined || mediaUrls === null) {
+            return;
+        }
+        if (!Array.isArray(mediaUrls) || !mediaUrls.every(url => typeof url === 'string')) {
+            throw new MediaAccessError('mediaUrls must be an array of strings', 400);
+        }
+        if (user.userRole === 'ADMIN') {
+            return;
+        }
+        const kept = new Set(alreadyAttached);
+        for (const url of mediaUrls) {
+            if (kept.has(url)) {
+                continue;
+            }
+            const key = S3StorageService.keyFromBucketUrl(url);
+            if (!key || !S3StorageService.isUserMediaKey(key, user.userId)) {
+                throw new MediaAccessError('You can only attach media you uploaded');
+            }
+        }
+    }
+
+    /**
+     * True when the URL may be deleted under the given scope.
+     * `{ ownerId }` allows only community/<ownerId>/...; `{ anyKey: true }` allows any key in our bucket (admins).
+     */
+    canDeleteMediaUrl(mediaUrl: unknown, scope: MediaDeleteScope): boolean {
+        const key = S3StorageService.keyFromBucketUrl(mediaUrl);
+        if (!key) {
+            return false;
+        }
+        return 'anyKey' in scope ? scope.anyKey === true : S3StorageService.isUserMediaKey(key, scope.ownerId);
+    }
+
+    /**
+     * Delete community media file. Callers must check permissions first;
+     * user-facing code goes through deleteMultipleCommunityMedia with a scope.
      */
     async deleteCommunityMedia(mediaUrl: string): Promise<void> {
         try {
-            // Extract key from URL
-            const url = new URL(mediaUrl);
-            const key = decodeURIComponent(url.pathname.substring(1)); // Remove leading slash, decode %20 etc.
+            const key = S3StorageService.keyFromBucketUrl(mediaUrl);
+            if (!key) {
+                throw new Error('Not a media URL in this bucket');
+            }
 
             const deleteParams: AWS.S3.DeleteObjectRequest = {
                 Bucket: this.bucketName,
@@ -321,17 +433,22 @@ export class S3StorageService {
     }
 
     /**
-     * Delete multiple community media files
+     * Delete multiple community media files. URLs outside the scope are skipped, never deleted.
      */
-    async deleteMultipleCommunityMedia(mediaUrls: string[]): Promise<void> {
+    async deleteMultipleCommunityMedia(mediaUrls: string[], scope: MediaDeleteScope): Promise<void> {
         try {
 
             if (!mediaUrls || mediaUrls.length === 0) {
                 return;
             }
 
+            const allowed = mediaUrls.filter(url => this.canDeleteMediaUrl(url, scope));
+            if (allowed.length < mediaUrls.length) {
+                console.warn(`Skipped ${mediaUrls.length - allowed.length} media URL(s) outside the allowed folder`);
+            }
+
             // Delete files concurrently
-            const deletePromises = mediaUrls.map(url => this.deleteCommunityMedia(url));
+            const deletePromises = allowed.map(url => this.deleteCommunityMedia(url));
             await Promise.all(deletePromises);
 
 

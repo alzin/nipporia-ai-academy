@@ -57,6 +57,7 @@ export class CommunityController {
 
       const result = await this.uploadMediaUseCase.execute({
         userId,
+        userRole: req.user!.role,
         targetFolder,
         customFileName,
         files: files.map(file => ({
@@ -82,7 +83,7 @@ export class CommunityController {
     try {
       const { mediaUrls } = req.body;
 
-      await this.deleteMediaUseCase.execute({ mediaUrls });
+      await this.deleteMediaUseCase.execute({ mediaUrls, userId: req.user!.userId, userRole: req.user!.role });
       res.json({ message: 'Media files deleted successfully' });
     } catch (error) {
       console.error('Media deletion error:', error);

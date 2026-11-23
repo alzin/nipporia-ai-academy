@@ -1,7 +1,10 @@
 import { S3StorageService } from '../../../infrastructure/services/S3StorageService';
+import { MediaAccessError } from '../../../domain/errors/MediaAccessError';
 
 export interface UploadMediaRequest {
     userId: string;
+    userRole: string;
+    // Admin only: choose the folder and file name. Members always upload to community/<userId>/.
     targetFolder?: string;
     customFileName?: string;
     files: Array<{
@@ -23,7 +26,13 @@ export class UploadMediaUseCase {
     constructor(private storageService: S3StorageService) { }
 
     async execute(request: UploadMediaRequest): Promise<UploadMediaResponse> {
-        const { userId, files, targetFolder, customFileName } = request;
+        const { userId, userRole, files } = request;
+        const targetFolder = request.targetFolder?.trim() || undefined;
+        const customFileName = request.customFileName?.trim() || undefined;
+
+        if ((targetFolder || customFileName) && userRole !== 'ADMIN') {
+            throw new MediaAccessError('Only admins can choose the upload folder or file name');
+        }
 
         // Validate files
         for (const file of files) {

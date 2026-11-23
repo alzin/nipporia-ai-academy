@@ -1,4 +1,5 @@
 // backend/src/application/use-cases/feedback/CreateFeedbackUseCase.ts
+import { S3StorageService } from '../../../infrastructure/services/S3StorageService';
 import { IFeedbackRepository } from '../../../domain/repositories/IFeedbackRepository';
 import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { IProfileRepository } from '../../../domain/repositories/IProfileRepository';
@@ -23,6 +24,9 @@ export class CreateFeedbackUseCase {
     if (!user) {
       throw new Error('User not found');
     }
+
+    // Members may attach only their own uploads.
+    S3StorageService.assertMemberMediaUrls(dto.mediaUrls, { userId: dto.userId, userRole: user.role });
 
     // Get user profile for author info
     const profile = await this.profileRepository.findByUserId(dto.userId);

@@ -30,7 +30,8 @@ export class DeletePostUseCase {
 
         if (post.mediaUrls && post.mediaUrls.length > 0) {
             try {
-                await this.storageService.deleteMultipleCommunityMedia(post.mediaUrls);
+                // Only the author's own uploads; a URL that points elsewhere in the bucket is never deleted.
+                await this.storageService.deleteMultipleCommunityMedia(post.mediaUrls, { ownerId: post.author?.userId || "" });
             } catch (error) {
                 console.warn('Failed to delete media files:', error);
             }

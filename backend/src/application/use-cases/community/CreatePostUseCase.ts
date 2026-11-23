@@ -1,3 +1,4 @@
+import { S3StorageService } from '../../../infrastructure/services/S3StorageService';
 import { IPostRepository } from '../../../domain/repositories/IPostRepository';
 import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { IProfileRepository } from '../../../domain/repositories/IProfileRepository';
@@ -46,6 +47,9 @@ export class CreatePostUseCase {
     if (!hasActiveSubscription && !isInFreeTrial && user.role !== 'ADMIN') {
       throw new Error('Active subscription required to post in the community.');
     }
+
+    // Members may attach only their own uploads.
+    S3StorageService.assertMemberMediaUrls(dto.mediaUrls, { userId: dto.userId, userRole: user.role });
 
     // Get user profile for author info
     const profile = await this.profileRepository.findByUserId(dto.userId);

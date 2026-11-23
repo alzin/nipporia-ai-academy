@@ -29,10 +29,18 @@ export class UpdateFeedbackUseCase {
             throw new Error("Not authorized to edit this feedback");
         }
 
+        // Members may attach only their own uploads (media already on the feedback may stay).
+        S3StorageService.assertMemberMediaUrls(mediaUrls, { userId: feedback.author.userId, userRole }, feedback.mediaUrls || []);
+
         // Delete removed media files from S3
         if (removedMediaUrls && removedMediaUrls.length > 0) {
             try {
-                await this.storageService.deleteMultipleCommunityMedia(removedMediaUrls);
+                // Only media that was on this feedback and sits in the author's own folder.
+                const onFeedback = new Set(feedback.mediaUrls || []);
+                await this.storageService.deleteMultipleCommunityMedia(
+                    removedMediaUrls.filter(url => onFeedback.has(url)),
+                    { ownerId: feedback.author.userId }
+                );
             } catch (error) {
                 console.warn('Failed to delete removed media files:', error);
                 // Continue with feedback update even if media deletion fails

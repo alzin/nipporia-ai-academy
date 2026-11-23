@@ -29,7 +29,8 @@ export class DeleteFeedbackUseCase {
         // Delete associated media files from S3 before deleting the feedback
         if (feedback.mediaUrls && feedback.mediaUrls.length > 0) {
             try {
-                await this.storageService.deleteMultipleCommunityMedia(feedback.mediaUrls);
+                // Only the author's own uploads; a URL that points elsewhere in the bucket is never deleted.
+                await this.storageService.deleteMultipleCommunityMedia(feedback.mediaUrls, { ownerId: feedback.author?.userId || "" });
             } catch (error) {
                 console.warn('Failed to delete media files:', error);
                 // Continue with feedback deletion even if media deletion fails

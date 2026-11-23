@@ -29,9 +29,17 @@ export class EditPostUseCase {
             throw new Error("Not authorized to edit this post");
         }
 
+        // Members may attach only their own uploads (media already on the post may stay).
+        S3StorageService.assertMemberMediaUrls(mediaUrls, { userId: post.author.userId, userRole }, post.mediaUrls || []);
+
         if (removedMediaUrls && removedMediaUrls.length > 0) {
             try {
-                await this.storageService.deleteMultipleCommunityMedia(removedMediaUrls);
+                // Only media that was on this post and sits in the author's own folder.
+                const onPost = new Set(post.mediaUrls || []);
+                await this.storageService.deleteMultipleCommunityMedia(
+                    removedMediaUrls.filter(url => onPost.has(url)),
+                    { ownerId: post.author.userId }
+                );
             } catch (error) {
                 console.warn('Failed to delete removed media files:', error);
             }
