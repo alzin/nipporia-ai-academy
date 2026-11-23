@@ -18,6 +18,7 @@ export interface DashboardCourse {
     title: string;
     description: string;
     icon: string;
+    coverImageUrl: string | null;
     isActive: boolean;
     freeLessonCount: number;
     order: number;
@@ -80,6 +81,7 @@ export class GetDashboardDataUseCase {
                 title: c.title,
                 description: c.description,
                 icon: c.icon,
+                coverImageUrl: c.coverImageUrl ?? null,
                 isActive: c.isActive,
                 freeLessonCount: c.freeLessonCount,
                 order: c.order,

@@ -3,6 +3,7 @@ import { Box, Card, CardContent, Typography, LinearProgress, Stack, Button } fro
 import { CheckCircle, PlayCircleOutline } from "@mui/icons-material";
 import { CourseCardProps } from "../../types/course.types";
 import { colors } from "../../theme/theme";
+import { CourseCover } from "../common/CourseCover";
 
 export const CourseCard = memo(
   ({ course, onClick, isEnrolled, progress = 0, lessonCount = 0, completedCount = 0 }: CourseCardProps) => {
@@ -29,6 +30,7 @@ export const CourseCard = memo(
         }}
         onClick={onClick}
       >
+        <CourseCover src={course.coverImageUrl} title={course.title} />
         <CardContent
           sx={{
             p: { xs: 2.5, sm: 3 },

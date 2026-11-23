@@ -71,7 +71,8 @@ export class CourseRepository implements ICourseRepository {
       entity.freeLessonCount,
       entity.order,
       entity.createdAt,
-      entity.updatedAt
+      entity.updatedAt,
+      entity.coverImageUrl ?? null
     );
   }
 
@@ -84,6 +85,7 @@ export class CourseRepository implements ICourseRepository {
     entity.isActive = course.isActive;
     entity.freeLessonCount = course.freeLessonCount;
     entity.order = course.order;
+    entity.coverImageUrl = course.coverImageUrl ?? null;
     entity.createdAt = course.createdAt;
     entity.updatedAt = course.updatedAt;
     return entity;

@@ -8,6 +8,7 @@ import { UpdateUserStatusUseCase } from '../../../application/use-cases/admin/us
 import { CreateCourseUseCase } from '../../../application/use-cases/admin/course-managment/CreateCourseUseCase';
 import { UpdateCourseUseCase } from '../../../application/use-cases/admin/course-managment/UpdateCourseUseCase';
 import { DeleteCourseUseCase } from '../../../application/use-cases/admin/course-managment/DeleteCourseUseCase';
+import { CourseCoverError, CourseCoverUseCase } from '../../../application/use-cases/admin/course-managment/CourseCoverUseCase';
 
 import { CreateLessonUseCase } from '../../../application/use-cases/admin/lesson-managment/CreateLessonUseCase';
 import { UpdateLessonUseCase } from '../../../application/use-cases/admin/lesson-managment/UpdateLessonUseCase';
@@ -37,6 +38,7 @@ export class AdminController {
     private readonly createCourseUseCase: CreateCourseUseCase,
     private readonly updateCourseUseCase: UpdateCourseUseCase,
     private readonly deleteCourseUseCase: DeleteCourseUseCase,
+    private readonly courseCoverUseCase: CourseCoverUseCase,
 
     // Lesson Management Use Cases
     private readonly createLessonUseCase: CreateLessonUseCase,
@@ -163,6 +165,43 @@ export class AdminController {
     } catch (error: any) {
       if (error.message === 'Course not found') {
         res.status(404).json({ error: error.message });
+        return;
+      }
+      next(error);
+    }
+  }
+
+  /** POST /admin/courses/:courseId/cover (multipart, field "cover"): upload or replace the cover. */
+  async uploadCourseCover(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const file = (req as any).file as Express.Multer.File | undefined;
+      if (!file) {
+        res.status(400).json({ error: '画像ファイルを選んでください。' });
+        return;
+      }
+      const course = await this.courseCoverUseCase.upload(req.params.courseId, req.user!.userId, {
+        buffer: file.buffer,
+        filename: file.originalname,
+        mimeType: file.mimetype,
+      });
+      res.json(course);
+    } catch (error: any) {
+      if (error instanceof CourseCoverError) {
+        res.status(error.status).json({ error: error.message });
+        return;
+      }
+      next(error);
+    }
+  }
+
+  /** DELETE /admin/courses/:courseId/cover: remove the cover (cards fall back to the icon). */
+  async removeCourseCover(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const course = await this.courseCoverUseCase.remove(req.params.courseId);
+      res.json(course);
+    } catch (error: any) {
+      if (error instanceof CourseCoverError) {
+        res.status(error.status).json({ error: error.message });
         return;
       }
       next(error);

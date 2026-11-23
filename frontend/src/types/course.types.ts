@@ -3,6 +3,8 @@ export interface Course {
   title: string;
   description: string;
   icon: string;
+  /** Main cover image (16:9). Optional; cards keep their plain look without it. */
+  coverImageUrl?: string | null;
   isActive: boolean;
   freeLessonCount?: number;
   lessonCount?: number;

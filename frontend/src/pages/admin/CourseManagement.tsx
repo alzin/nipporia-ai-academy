@@ -18,7 +18,8 @@ import {
   TextField,
   Switch,
   FormControlLabel,
-  Skeleton
+  Skeleton,
+  Alert
 } from "@mui/material";
 import {
   Add,
@@ -28,6 +29,8 @@ import {
 import { motion } from "framer-motion";
 import api from "../../services/api";
 import AdminNavigationButton from "../../components/admin/AdminNavigationButton";
+import { CourseCoverField } from "../../components/admin/CourseCoverField";
+import { CourseCover } from "../../components/common/CourseCover";
 
 import { useNavigate } from "react-router-dom";
 
@@ -36,6 +39,7 @@ interface Course {
   title: string;
   description: string;
   icon: string;
+  coverImageUrl?: string | null;
   isActive: boolean;
   lessonCount?: number;
   freeLessonCount: number;
@@ -64,6 +68,11 @@ export const CourseManagement: React.FC = () => {
   const [, setLessons] = useState<Lesson[]>([]);
   const [courseDialog, setCourseDialog] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  // Cover image: a picked file is uploaded when the course is saved.
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverRemoved, setCoverRemoved] = useState(false);
+  const [savingCourse, setSavingCourse] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
 
 
@@ -180,6 +189,9 @@ export const CourseManagement: React.FC = () => {
       freeLessonCount: 2,
     });
     setEditingCourse(null);
+    setCoverFile(null);
+    setCoverRemoved(false);
+    setSaveError(null);
   };
 
 
@@ -224,19 +236,53 @@ export const CourseManagement: React.FC = () => {
   };
 
   const handleSaveCourse = async () => {
+    setSavingCourse(true);
+    setSaveError(null);
+    let courseId = editingCourse?.id;
     try {
       const payload = { ...courseForm };
       if (editingCourse) {
         await api.put(`/admin/courses/${editingCourse.id}`, payload);
       } else {
-        await api.post("/admin/courses", payload);
+        const created = await api.post("/admin/courses", payload);
+        courseId = created.data?.id;
       }
-      setCourseDialog(false);
-      resetCourseForm();
-      fetchCourses();
     } catch (error) {
       console.error("Failed to save course:", error);
+      setSaveError("保存できませんでした。もう一度お試しください。");
+      setSavingCourse(false);
+      return;
     }
+
+    try {
+      if (courseId && coverFile) {
+        const form = new FormData();
+        form.append("cover", coverFile);
+        await api.post(`/admin/courses/${courseId}/cover`, form, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else if (courseId && coverRemoved && editingCourse?.coverImageUrl) {
+        await api.delete(`/admin/courses/${courseId}/cover`);
+      }
+    } catch (error: any) {
+      console.error("Failed to save course cover:", error);
+      const message = error?.response?.data?.error;
+      setSaveError(
+        `講座は保存しましたが、表紙の画像を保存できませんでした。${message ? `（${message}）` : ""}もう一度お試しください。`
+      );
+      // Keep the dialog open on the saved course, so another try updates it instead of creating a copy.
+      if (!editingCourse && courseId) {
+        setEditingCourse({ id: courseId, ...courseForm, coverImageUrl: null });
+      }
+      setSavingCourse(false);
+      fetchCourses();
+      return;
+    }
+
+    setSavingCourse(false);
+    setCourseDialog(false);
+    resetCourseForm();
+    fetchCourses();
   };
 
   const handleDeleteCourse = async (courseId: string) => {
@@ -374,18 +420,22 @@ export const CourseManagement: React.FC = () => {
                     #{course.order || index + 1}
                   </Typography>
                 </Box>
-                <Box
-                  sx={{
-                    height: 120,
-                    bgcolor: "#F8E6DD",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "3rem",
-                  }}
-                >
-                  {course.icon}
-                </Box>
+                {course.coverImageUrl ? (
+                  <CourseCover src={course.coverImageUrl} title={course.title} />
+                ) : (
+                  <Box
+                    sx={{
+                      height: 120,
+                      bgcolor: "#F8E6DD",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "3rem",
+                    }}
+                  >
+                    {course.icon}
+                  </Box>
+                )}
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Stack
                     direction="row"
@@ -445,6 +495,9 @@ export const CourseManagement: React.FC = () => {
                     size="small"
                     onClick={() => {
                       setEditingCourse(course);
+                      setCoverFile(null);
+                      setCoverRemoved(false);
+                      setSaveError(null);
                       setCourseForm({
                         title: course.title,
                         description: course.description,
@@ -526,6 +579,17 @@ export const CourseManagement: React.FC = () => {
                 })
               }
             />
+            <CourseCoverField
+              currentUrl={editingCourse?.coverImageUrl}
+              file={coverFile}
+              removed={coverRemoved}
+              onFileChange={(file) => {
+                setCoverFile(file);
+                if (file) setCoverRemoved(false);
+              }}
+              onRemove={() => setCoverRemoved(true)}
+              disabled={savingCourse}
+            />
             <FormControlLabel
               control={
                 <Switch
@@ -537,15 +601,17 @@ export const CourseManagement: React.FC = () => {
               }
               label="公開する"
             />
+            {saveError && <Alert severity="error">{saveError}</Alert>}
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseCourseDialog}>キャンセル</Button>
+          <Button onClick={handleCloseCourseDialog} disabled={savingCourse}>キャンセル</Button>
           <Button
             variant="contained"
             onClick={handleSaveCourse}
+            disabled={savingCourse}
           >
-            保存
+            {savingCourse ? "保存中…" : "保存"}
           </Button>
         </DialogActions>
       </Dialog>

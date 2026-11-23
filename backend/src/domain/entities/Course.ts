@@ -7,6 +7,8 @@ export interface ICourse {
   isActive: boolean;
   freeLessonCount: number;
   order: number;
+  /** Main cover image (plain S3 object URL; signed on the way out). */
+  coverImageUrl?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +23,7 @@ export class Course implements ICourse {
     public freeLessonCount: number,
     public order: number,
     public createdAt: Date,
-    public updatedAt: Date
+    public updatedAt: Date,
+    public coverImageUrl: string | null = null
   ) { }
 }

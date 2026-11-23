@@ -4,6 +4,7 @@ export interface Course {
   title: string;
   description: string;
   icon: string;
+  coverImageUrl?: string | null;
   isActive: boolean;
   freeLessonCount?: number;
 }

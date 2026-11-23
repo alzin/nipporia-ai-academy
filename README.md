@@ -63,6 +63,12 @@ This stops copied links and the browser's download button. It can't stop someone
 
 Free lessons (about 30% of each course, spread out so visitors see a bit of everything; the final review lessons stay for members): 入門 1, 4, 10, 12, 15, 18 · 自分仕様 1, 2, 7 · サイト 1, 2, 6, 9. The course cards show the count (「うちN本は無料」) and the lesson list marks them 無料.
 
+## Course cover images
+
+Each course can have one 16:9 cover image (JPG, PNG or WebP, up to 5MB; about 1600×900 is best). Admins add, replace or remove it in 講座の管理 → 編集 → 表紙の画像. The API is `POST /api/admin/courses/:courseId/cover` (multipart, field `cover`) and `DELETE /api/admin/courses/:courseId/cover`. Files go to the private bucket under `course-covers/<courseId>/`, the course stores the plain S3 URL in `coverImageUrl`, and responses carry a presigned link like other media. The cover shows on the course cards and on the course page (sidebar on desktop, a small image next to the title on phones). Without a cover the cards look as before.
+
+The column comes from the migration `AddCourseCoverImage`. Deploys don't run migrations, so run `npm run migration:run` against the production database before deploying code that needs a new column.
+
 ## Google sign-in
 
 「Google で続ける」 on the login and registration pages uses Google Identity Services. The browser gets an ID token from Google and posts it to `POST /api/auth/google`; the server checks it against `GOOGLE_CLIENT_ID` and signs the user in, creating the account on first use (email already verified by Google, no password; they can set one later with "forgot password"). Email lookups are case-insensitive, so an existing email account and a Google account with the same address are the same user. The client ID is public and is served to the pages by `GET /api/auth/config`; no client secret is used. The OAuth client lives in GCP project `nipporia-lp-493210` (Google Auth Platform → Clients), with `https://academy.nipporia.com`, `http://localhost:3000` and `http://localhost` as JavaScript origins.

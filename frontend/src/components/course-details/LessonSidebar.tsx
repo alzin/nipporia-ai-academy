@@ -5,6 +5,7 @@ import { LessonSidebarHeader } from "./LessonSidebarHeader";
 import { CollapsedProgressCard } from "./CollapsedProgressCard";
 import { ExpandedProgressCard } from "./ExpandedProgressCard";
 import { LessonsList } from "./LessonsList";
+import { CourseCover } from "../common/CourseCover";
 
 interface LessonSidebarProps {
   selectedCourse?: any;
@@ -73,6 +74,16 @@ export const LessonSidebar: React.FC<LessonSidebarProps> = ({
           isMobile={isMobile}
           setDrawerOpen={setDrawerOpen}
         />
+
+        {/* Course cover (only when the course has one) */}
+        {!sidebarCollapsed && selectedCourse && (
+          <CourseCover
+            src={selectedCourse.coverImageUrl}
+            title={selectedCourse.title}
+            eager
+            sx={{ borderRadius: 1, mb: 1.5 }}
+          />
+        )}
 
         {/* Collapsed Progress Indicator */}
         {sidebarCollapsed &&

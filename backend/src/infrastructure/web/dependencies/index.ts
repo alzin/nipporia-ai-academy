@@ -47,6 +47,7 @@ import { UpdateUserStatusUseCase } from "../../../application/use-cases/admin/us
 import { CreateCourseUseCase } from "../../../application/use-cases/admin/course-managment/CreateCourseUseCase";
 import { UpdateCourseUseCase } from "../../../application/use-cases/admin/course-managment/UpdateCourseUseCase";
 import { DeleteCourseUseCase } from "../../../application/use-cases/admin/course-managment/DeleteCourseUseCase";
+import { CourseCoverUseCase } from "../../../application/use-cases/admin/course-managment/CourseCoverUseCase";
 
 // Admin Use Cases - Lesson Management
 import { CreateLessonUseCase } from "../../../application/use-cases/admin/lesson-managment/CreateLessonUseCase";
@@ -238,6 +239,7 @@ export interface DependencyContainer {
         createCourse: CreateCourseUseCase;
         updateCourse: UpdateCourseUseCase;
         deleteCourse: DeleteCourseUseCase;
+        courseCover: CourseCoverUseCase;
 
         // Admin - Lesson Management
         createLesson: CreateLessonUseCase;
@@ -462,6 +464,10 @@ export const setupDependencies = (): DependencyContainer => {
         ),
         deleteCourse: new DeleteCourseUseCase(
             repositories.course
+        ),
+        courseCover: new CourseCoverUseCase(
+            repositories.course,
+            services.s3Storage
         ),
 
         // Admin - Lesson Management
@@ -889,6 +895,7 @@ export const setupDependencies = (): DependencyContainer => {
             useCases.createCourse,
             useCases.updateCourse,
             useCases.deleteCourse,
+            useCases.courseCover,
             // Lesson Management
             useCases.createLesson,
             useCases.updateLesson,

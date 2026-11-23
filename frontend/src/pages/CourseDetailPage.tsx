@@ -174,6 +174,7 @@ export const CourseDetailPage: React.FC = () => {
           {isMobile && (
             <MobileTopBar
               title={selectedCourse?.title}
+              coverImageUrl={selectedCourse?.coverImageUrl}
               onOpenDrawer={() => setDrawerOpen(true)}
             />
           )}

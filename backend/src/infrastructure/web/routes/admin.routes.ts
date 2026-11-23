@@ -4,7 +4,9 @@ import { body } from 'express-validator';
 import { AdminController } from '../controllers/admin.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 import { validateRequest } from '../middleware/validateRequest';
+import multer from 'multer';
 import { LessonType } from '../../../domain/entities/Lesson';
+import { COURSE_COVER_MAX_BYTES } from '../../../application/use-cases/admin/course-managment/CourseCoverUseCase';
 
 const adminRouter = (adminController: AdminController): Router => {
   const router = Router();
@@ -47,6 +49,25 @@ const adminRouter = (adminController: AdminController): Router => {
     adminController.updateCourse.bind(adminController)
   );
   router.delete('/courses/:courseId', adminController.deleteCourse.bind(adminController));
+
+  // Course cover image (16:9, JPG / PNG / WebP, up to 5MB)
+  const coverUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: COURSE_COVER_MAX_BYTES, files: 1 },
+  }).single('cover');
+  router.post(
+    '/courses/:courseId/cover',
+    (req, res, next) => coverUpload(req, res, (err: any) => {
+      if (err) {
+        const tooLarge = err.code === 'LIMIT_FILE_SIZE';
+        res.status(400).json({ error: tooLarge ? '画像は5MBまでにしてください。' : '画像をアップロードできませんでした。' });
+        return;
+      }
+      next();
+    }),
+    adminController.uploadCourseCover.bind(adminController)
+  );
+  router.delete('/courses/:courseId/cover', adminController.removeCourseCover.bind(adminController));
 
   // Lesson management
   const lessonTypes = Object.values(LessonType);

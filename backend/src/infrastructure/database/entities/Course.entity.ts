@@ -25,6 +25,9 @@ export class CourseEntity {
   @Column({ default: 1 })
   order!: number;
 
+  @Column({ type: 'varchar', nullable: true })
+  coverImageUrl!: string | null;
+
   @OneToMany(() => LessonEntity, lesson => lesson.course)
   lessons!: LessonEntity[];
 
