@@ -67,6 +67,7 @@ import {
   startDeleteFeedbackComment,
 } from "../../store/slices/feedbackSlice";
 import { linkifyText } from "../../utils/linkify";
+import { SampleBadge } from "./SampleBadge";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import { formatJaDate } from "../../utils/formatDateAndTime";
@@ -92,6 +93,7 @@ interface Comment {
   canEdit?: boolean;
   canDelete?: boolean;
   hasReplies?: boolean;
+  isSample?: boolean;
 }
 
 interface CommentsProps {
@@ -282,13 +284,16 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 mb={1}
               >
                 <Box>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight={600}
-                    sx={{ color: "text.primary" }}
-                  >
-                    {comment.author?.name || "名前のないユーザー"}
-                  </Typography>
+                  <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" useFlexGap>
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight={600}
+                      sx={{ color: "text.primary" }}
+                    >
+                      {comment.author?.name || "名前のないユーザー"}
+                    </Typography>
+                    {comment.isSample && <SampleBadge />}
+                  </Stack>
                   <Typography
                     variant="caption"
                     color="text.secondary"

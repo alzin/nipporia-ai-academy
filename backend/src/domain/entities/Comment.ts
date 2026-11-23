@@ -13,6 +13,8 @@ export interface IComment {
   parentCommentId?: string;
   author: IAuthor;
   replies?: Comment[];
+  /** Labeled example comment (badge 「サンプル投稿」), never set for real comments */
+  isSample?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +29,7 @@ export class Comment implements IComment {
     public author: IAuthor,
     public createdAt: Date,
     public updatedAt: Date,
-    public replies?: Comment[]
+    public replies?: Comment[],
+    public isSample: boolean = false
   ) { }
 }

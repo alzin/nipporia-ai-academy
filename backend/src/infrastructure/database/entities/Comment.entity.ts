@@ -25,6 +25,11 @@ export class CommentEntity {
   @Column({ nullable: true })
   parentCommentId?: string;
 
+  // True only for the labeled example threads made by src/scripts/sampleCommunityPosts.ts.
+  // Real comments never set it; the UI shows a 「サンプル投稿」 badge when it is true.
+  @Column({ default: false })
+  isSample!: boolean;
+
   @ManyToOne(() => CommentEntity, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'

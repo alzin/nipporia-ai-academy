@@ -197,6 +197,7 @@ export class CommentRepository implements ICommentRepository {
     entity.userId = comment.userId;
     entity.content = comment.content;
     entity.parentCommentId = comment.parentCommentId;
+    entity.isSample = comment.isSample ?? false;
     entity.createdAt = comment.createdAt;
     entity.updatedAt = comment.updatedAt;
     return entity;
@@ -219,7 +220,9 @@ export class CommentRepository implements ICommentRepository {
       entity.parentCommentId,
       author,
       entity.createdAt,
-      entity.updatedAt
+      entity.updatedAt,
+      undefined,
+      entity.isSample
     );
   }
 }

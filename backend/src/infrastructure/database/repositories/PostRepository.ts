@@ -227,7 +227,8 @@ export class PostRepository implements IPostRepository {
       isLiked,
       entity.createdAt,
       entity.updatedAt,
-      commentsCount  // This should be last parameter and should be a number
+      commentsCount,  // must be a number
+      entity.isSample
     );
   }
 
@@ -251,6 +252,7 @@ export class PostRepository implements IPostRepository {
     entity.content = post.content;
     entity.mediaUrls = post.mediaUrls.join(',');
     entity.likesCount = post.likesCount;
+    entity.isSample = post.isSample ?? false;
     entity.createdAt = post.createdAt;
     entity.updatedAt = post.updatedAt;
     return entity;

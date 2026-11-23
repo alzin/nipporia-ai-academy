@@ -12,6 +12,7 @@ import {
   CircularProgress,
   useTheme,
   useMediaQuery,
+  Typography,
 } from "@mui/material";
 import { Save, Cancel, ExpandLess, ExpandMore } from "@mui/icons-material";
 import { motion } from "framer-motion";
@@ -28,6 +29,9 @@ import PostCardMenu from "./PostCardMenu";
 import PostCardActions from "./PostCardActions";
 import PostCardDialogs from "./PostCardDialogs";
 import { linkifyText } from "../../utils/linkify";
+
+// Under the header of a sample thread, so nobody reads it as a real learner's post.
+const SAMPLE_POST_NOTE = "運営が作った見本の投稿です。実際の受講者の投稿ではありません。";
 
 interface ComponentItem {
   id: string;
@@ -50,6 +54,7 @@ interface ComponentItem {
   comments?: any[];
   commentsLoading?: boolean;
   commentsInitialized?: boolean;
+  isSample?: boolean;
 }
 
 interface PostCardProps {
@@ -357,7 +362,14 @@ export const PostCard: React.FC<PostCardProps> = ({
             onMenuClick={handleMenuClick}
             isOwnItem={isOwnItem}
             isDeleting={post.isDeleting || false}
+            isSample={post.isSample}
           />
+
+          {post.isSample && (
+            <Typography variant="body2" color="text.secondary" component="p" sx={{ mt: -1, mb: 2 }}>
+              {SAMPLE_POST_NOTE}
+            </Typography>
+          )}
 
           {/* Content - Editable or Display */}
           {isEditing ? (

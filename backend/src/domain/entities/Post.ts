@@ -13,6 +13,8 @@ export interface IPost {
   author: IAuthor;
   isLiked: boolean;
   commentsCount: number;
+  /** Labeled example thread (badge 「サンプル投稿」), never set for real posts */
+  isSample: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,7 +29,8 @@ export class Post implements IPost {
     public isLiked: boolean,
     public createdAt: Date,
     public updatedAt: Date,
-    public commentsCount: number = 0
+    public commentsCount: number = 0,
+    public isSample: boolean = false
   ) {}
 
   incrementLikes(): void {

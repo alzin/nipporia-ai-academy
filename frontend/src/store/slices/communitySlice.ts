@@ -14,6 +14,7 @@ interface Post {
   content: string;
   mediaUrls: string[];
   likesCount: number;
+  isSample?: boolean;
   isLiked: boolean;
   createdAt: string;
   isEditing?: boolean;

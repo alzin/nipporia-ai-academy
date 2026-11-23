@@ -26,6 +26,11 @@ export class PostEntity {
   @Column({ default: 0 })
   likesCount!: number;
 
+  // True only for the labeled example threads made by src/scripts/sampleCommunityPosts.ts.
+  // Real posts never set it; the UI shows a 「サンプル投稿」 badge when it is true.
+  @Column({ default: false })
+  isSample!: boolean;
+
   @CreateDateColumn()
   createdAt!: Date;
 

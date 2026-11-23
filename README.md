@@ -69,6 +69,12 @@ Each course can have one 16:9 cover image (JPG, PNG or WebP, up to 5MB; about 16
 
 The column comes from the migration `AddCourseCoverImage`. Deploys don't run migrations, so run `npm run migration:run` against the production database before deploying code that needs a new column.
 
+## Community sample threads
+
+The 「みんなの投稿」 tab has 10 labeled example threads (questions about the three courses, with a teacher's answer). Every one of them has `isSample = true` on `posts` and `comment`, so the UI shows a 「サンプル投稿」 badge and a note under the post; real posts never get the flag. The authors are sample accounts named 「受講者A（例）」…「講師（例）」 (`sample-user-*`, `@example.com`, inactive, not verified, no usable password), so nobody can sign in as them. The images are mock screenshots in `backend/src/scripts/sample-media/`, uploaded to `community/sample-posts/` in the bucket.
+
+`npm run sample-posts -- seed` adds or updates them (safe to re-run; the content is in `src/scripts/sampleCommunityPosts.data.ts`), `-- status` shows counts, and `-- remove` deletes only the sample rows, the sample accounts, every comment on a sample post and the images. Needs the `AddSampleFlags` migration. `DATABASE_URL` picks the database.
+
 ## Google sign-in
 
 「Google で続ける」 on the login and registration pages uses Google Identity Services. The browser gets an ID token from Google and posts it to `POST /api/auth/google`; the server checks it against `GOOGLE_CLIENT_ID` and signs the user in, creating the account on first use (email already verified by Google, no password; they can set one later with "forgot password"). Email lookups are case-insensitive, so an existing email account and a Google account with the same address are the same user. The client ID is public and is served to the pages by `GET /api/auth/config`; no client secret is used. The OAuth client lives in GCP project `nipporia-lp-493210` (Google Auth Platform → Clients), with `https://academy.nipporia.com`, `http://localhost:3000` and `http://localhost` as JavaScript origins.

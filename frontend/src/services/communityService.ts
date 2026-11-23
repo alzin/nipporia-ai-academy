@@ -13,6 +13,7 @@ export interface Post {
   mediaUrls: string[];
   isAnnouncement: boolean;
   likesCount: number;
+  isSample?: boolean;
   isLiked: boolean;
   createdAt: string;
   updatedAt: string;

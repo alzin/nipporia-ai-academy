@@ -8,6 +8,7 @@ import {
 import { MoreVert } from "@mui/icons-material";
 import { Campaign, Feedback as FeedbackIcon } from "@mui/icons-material";
 import { formatJaDateTime } from "../../utils/formatDateAndTime";
+import { SampleBadge } from "./SampleBadge";
 
 interface PostCardHeaderProps {
   userId?: string;
@@ -19,6 +20,7 @@ interface PostCardHeaderProps {
   onMenuClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
   isDeleting: boolean;
   isOwnItem?: boolean;
+  isSample?: boolean;
 }
 
 export const PostCardHeader: React.FC<PostCardHeaderProps> = ({
@@ -31,6 +33,7 @@ export const PostCardHeader: React.FC<PostCardHeaderProps> = ({
   onMenuClick,
   isDeleting,
   isOwnItem,
+  isSample,
 }) => {
   return (
     <Stack direction="row" spacing={2} alignItems="flex-start" mb={2}>
@@ -49,6 +52,7 @@ export const PostCardHeader: React.FC<PostCardHeaderProps> = ({
           <Typography variant="subtitle1" component="p" fontWeight={700} color="text.primary">
             {name || "名前のないユーザー"}
           </Typography>
+          {isSample && <SampleBadge />}
           {isAnnouncement && (
             <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: "primary.dark" }}>
               <Campaign sx={{ fontSize: 18 }} aria-hidden />

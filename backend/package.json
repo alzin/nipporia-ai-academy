@@ -18,7 +18,8 @@
     "create-admin": "ts-node --transpile-only src/scripts/createAdmin.ts",
     "seed:claude-code": "ts-node --transpile-only src/scripts/seedClaudeCodeCourse.ts",
     "dev:stripe-listen": "ts-node --transpile-only src/scripts/stripeDevListener.ts",
-    "video:hls": "ts-node --transpile-only src/scripts/convertLessonsToHls.ts"
+    "video:hls": "ts-node --transpile-only src/scripts/convertLessonsToHls.ts",
+    "sample-posts": "ts-node --transpile-only src/scripts/sampleCommunityPosts.ts"
   },
   "keywords": [],
   "author": "",
