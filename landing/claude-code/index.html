@@ -20,21 +20,28 @@
     })(window, document, "clarity", "script", "zgeknqrdeg");
   </script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claude Code 入門｜ターミナルなしで始める動画講座</title>
-<meta name="description" content="Claude Code をはじめて使う人のための動画講座。アプリの準備から、最初のお願い、変更の確かめ方まで。続編「Claude Code を自分仕様にする」もメンバーなら見られます。1本60〜90秒、第1回は無料です。">
-<meta property="og:title" content="Claude Code 入門｜ターミナルなしで始める動画講座">
-<meta property="og:description" content="1本60〜90秒の動画で、Claude Code の使い方をゼロから順番に。字幕つき。第1回は無料。">
-<meta property="og:image" content="https://academy.nipporia.com/claude-code/media/sample-poster.jpg">
+<title>Claude Code を安全に使いこなす動画講座｜Nipporia AI Academy</title>
+<meta name="description" content="頼み方、結果の確かめ方、権限とデータの守り方。Claude Code を効率よく安全に使うための動画講座が、ひとつのメンバーシップで全部見られます。いまは3講座・全39回。各講座の約3割は登録なしで無料。質問できるコミュニティつき。">
+<meta property="og:title" content="Claude Code を安全に使いこなす動画講座｜Nipporia AI Academy">
+<meta property="og:description" content="頼み方、確かめ方、権限とデータの守り方。3講座・全39回と、これから増える講座、質問できるコミュニティを、ひとつのメンバーシップで。">
+<meta property="og:image" content="https://academy.nipporia.com/claude-code/media/og-academy.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:url" content="https://academy.nipporia.com/claude-code/">
 <link rel="canonical" href="https://academy.nipporia.com/claude-code/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Claude Code を安全に使いこなす動画講座｜Nipporia AI Academy">
+<meta name="twitter:description" content="頼み方、確かめ方、権限とデータの守り方。3講座・全39回と、これから増える講座、質問できるコミュニティを、ひとつのメンバーシップで。">
+<meta name="twitter:image" content="https://academy.nipporia.com/claude-code/media/og-academy.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
 <!--
   公開先：https://academy.nipporia.com/claude-code/（視聴サイトと同じサーバー）。
   価格：メンバーシップ（月額 ¥4,980 / 年額 ¥49,800、税込）。視聴サイトの Stripe の価格と同じにしておくこと。
+  講座の回数・無料の回・タイトルは、/api/courses と /api/courses/:id/lessons の内容と合わせておくこと（2026-11-23 に確認）。
+  「今後追加予定」の講座は準備中。公開の時期は書かない。
 -->
 <style>
 :root{
@@ -62,7 +69,7 @@ body{
   font-size:16px;line-height:1.9;letter-spacing:.03em;font-kerning:normal;
 }
 ::selection{background:var(--accent-soft);color:var(--ink)}
-h1,h2,h3{line-height:1.45;letter-spacing:.02em;font-feature-settings:"palt";word-break:auto-phrase;text-wrap:balance;margin:0}
+h1,h2,h3,h4{line-height:1.45;letter-spacing:.02em;font-feature-settings:"palt";word-break:auto-phrase;text-wrap:balance;margin:0}
 p{margin:0}
 p,li,q,summary,figcaption,dd,.t{word-break:auto-phrase;line-break:strict}
 img,video{display:block;max-width:100%;height:auto}
@@ -85,6 +92,8 @@ mark.todo{background:var(--todo);color:#5A4A00;padding:0 .3em;border-radius:4px;
 .btn:hover{background:var(--accent-ink)}
 .btn:active{transform:translateY(1px)}
 .btn.sm{min-height:44px;padding:0 18px;font-size:14px}
+.btn.ghost{min-height:48px;padding:0 20px;font-size:15px;background:transparent;color:var(--accent-ink);box-shadow:inset 0 0 0 2px var(--accent)}
+.btn.ghost:hover{background:var(--accent-soft)}
 .link{display:inline-flex;align-items:center;min-height:44px;font-weight:700;color:var(--blue);text-decoration:underline;text-decoration-color:rgba(60,90,128,.35)}
 .link:hover{text-decoration-color:currentColor}
 :is(a,button,summary):focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:6px}
@@ -99,10 +108,12 @@ mark.todo{background:var(--todo);color:#5A4A00;padding:0 .3em;border-radius:4px;
 .brand{display:inline-flex;align-items:center;gap:10px;min-height:44px;font-weight:700;text-decoration:none;letter-spacing:.04em}
 .brand,.top .login,.btn.sm{white-space:nowrap}
 @media (max-width:400px){.top .wrap{padding:0 14px}.top-actions{gap:10px}.brand{gap:6px;letter-spacing:0;font-size:15px}.brand svg{width:22px;height:22px}.btn.sm{padding:0 14px}}
+@media (max-width:420px){.brand .sub{display:none}}
 
 /* hero */
 .hero{padding:40px 0 64px}
-.hero-grid{display:grid;gap:22px;grid-template-areas:"h" "player" "lead" "cta" "facts"}
+.hero-grid{display:grid;gap:22px;grid-template-areas:"eb" "h" "player" "lead" "cta" "facts"}
+.eyebrow{grid-area:eb;margin-bottom:-12px;font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--accent-ink)}
 .hero h1{grid-area:h;font-size:clamp(31px,6.2vw,46px);font-weight:900;letter-spacing:0}
 .hero h1 .hl{color:var(--accent)}
 .lead{grid-area:lead;font-size:clamp(16px,2.1vw,18px);color:var(--muted);max-width:32em}
@@ -118,9 +129,9 @@ mark.todo{background:var(--todo);color:#5A4A00;padding:0 .3em;border-radius:4px;
 @media (max-width:480px){.lessons li{gap:10px;padding:12px 14px}.lessons .no{min-width:3.2em}}
 .player figcaption{font-size:13px;color:var(--muted);padding:10px 2px 0}
 @media (min-width:900px){
-  .hero{padding:72px 0 96px}
+  .hero{padding:64px 0 96px}
   .hero-grid{grid-template-columns:1.12fr 1fr;column-gap:48px;row-gap:24px;align-content:center;
-    grid-template-areas:"h player" "lead player" "cta player" "facts player"}
+    grid-template-areas:"eb player" "h player" "lead player" "cta player" "facts player"}
   .player{align-self:center}
 }
 
@@ -137,6 +148,7 @@ section{padding:80px 0}
 .bridge-text{font-size:clamp(20px,3.4vw,26px);font-weight:900;line-height:1.6;font-feature-settings:"palt"}
 .jump{display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:700;color:var(--blue);text-decoration:underline;text-decoration-color:rgba(60,90,128,.35)}
 .jump:hover{text-decoration-color:currentColor}
+.row-c{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 24px}
 
 /* worries */
 .worries{display:grid;gap:0 48px}
@@ -158,58 +170,67 @@ section{padding:80px 0}
   .features>.feature:nth-child(even){grid-template-columns:1fr 1.45fr}
   .features>.feature:nth-child(even) img{order:2}
 }
-.compare-wrap{max-width:760px;margin:0 auto}
-.compare{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:15px;line-height:1.6}
-.compare th,.compare td{padding:16px 18px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
-.compare tbody tr:last-child th,.compare tbody tr:last-child td{border-bottom:0}
-.compare thead th{font-size:14px;font-weight:700;color:var(--muted);line-height:1.4}
-.compare thead th.us{color:var(--accent-ink)}
-.compare tbody th{width:6.5em;font-size:14px;font-weight:700;color:var(--muted);white-space:nowrap}
-.compare td{color:var(--muted)}
-.compare td.us{color:var(--ink);font-weight:700}
-.compare .us{border-left:2px solid var(--accent)}
-.compare td small{display:block;font-size:13px;color:var(--muted)}
-.compare td b{font-size:18px}
-.compare-note{max-width:760px;margin:24px auto 0;text-align:center}
-.fit-head{margin-top:72px}
-.compare-src{max-width:760px;margin:12px auto 0;font-size:13px;color:var(--muted);text-align:center}
-@media (max-width:480px){.compare{font-size:14px}.compare th,.compare td{padding:12px 10px}.compare tbody th{width:auto;white-space:normal}.compare-note,.compare-src{text-align:left}}
 .capbar{margin:40px auto 0;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:15px;text-align:center;line-height:1.8}
 .capbar span{display:inline-block;margin:0 .3em}
 
-/* curriculum */
-.chapters{display:grid;gap:28px}
-.course+.course{margin-top:48px;padding-top:36px;border-top:1px dashed var(--line)}
-.course-head{margin-bottom:22px}
-.course-head h3{font-size:clamp(20px,3.2vw,24px);font-weight:900}
-.course-head .cno{display:block;font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--accent-ink);margin-bottom:2px}
-.course-head p{margin-top:6px;color:var(--muted);font-size:15px}
-.chapter h4{display:flex;align-items:baseline;gap:12px;font-size:18px;margin:0 0 10px;line-height:1.45}
-.chapter h4 small{font-size:13px;font-weight:500;color:var(--muted)}
-.lessons{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--card);overflow:hidden}
-.lessons li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 18px;border-top:1px solid var(--line)}
+/* courses */
+.courses{display:grid;gap:24px}
+.ccard{display:grid;background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.ccard .cover{margin:0;padding:14px 14px 0}
+.ccard .cover img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;background:#E9E2D6}
+.cbody{padding:18px 20px 24px;min-width:0}
+@media (min-width:700px){
+  .ccard{grid-template-columns:minmax(0,280px) minmax(0,1fr);align-items:start}
+  .ccard .cover{padding:22px 0 22px 22px}
+  .cbody{padding:22px 26px 26px}
+}
+@media (min-width:960px){.ccard{grid-template-columns:minmax(0,380px) minmax(0,1fr)}.ccard .cover{padding:24px 0 24px 24px}.cbody{padding:24px 30px 28px}}
+.cno{font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--accent-ink)}
+.ccard h3{font-size:clamp(20px,3vw,24px);font-weight:900;margin-top:2px}
+.cdesc{margin-top:10px;color:var(--muted);font-size:15px}
+.cmeta{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 8px;font-size:13px;line-height:1.6}
+.cmeta li{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:2px 12px}
+.free-h{margin:22px 0 8px;font-size:15px;font-weight:700}
+.free-h small{font-size:13px;font-weight:500;color:var(--muted);margin-left:.5em}
+.free-list{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.free-list li{display:flex;gap:10px;font-size:15px;line-height:1.65}
+.free-list .no,.lessons .no{flex:none;min-width:3.6em;font-size:14px;font-weight:700;color:var(--accent-ink);font-variant-numeric:tabular-nums}
+@media (min-width:1000px){.free-list.two{grid-template-columns:1fr 1fr;column-gap:20px}}
+.ccard .acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;margin-top:18px}
+.all{margin-top:6px}
+.all summary{display:inline-flex;align-items:center;gap:.5em;min-height:44px;cursor:pointer;list-style:none;font-size:14px;font-weight:700;color:var(--blue);text-decoration:underline;text-decoration-color:rgba(60,90,128,.35);text-underline-offset:.25em}
+.all summary::-webkit-details-marker{display:none}
+.all summary::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s ease}
+.all[open] summary::after{transform:translateY(2px) rotate(-135deg)}
+.lessons{list-style:none;margin:4px 0 0;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--card);overflow:hidden}
+.lessons li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 16px;border-top:1px solid var(--line);font-size:15px}
 .lessons li:first-child{border-top:0}
-.lessons li:target{background:var(--accent-soft)}
-.lessons .no{min-width:3.6em;font-size:14px;font-weight:700;color:var(--accent-ink);font-variant-numeric:tabular-nums}
-.lessons .t{font-weight:500;line-height:1.6;overflow-wrap:anywhere}
-.lessons .t small{display:block;font-size:13px;font-weight:400;color:var(--muted)}
-.lessons .d{font-size:13px;color:var(--muted)}
-.lessons .free{display:inline-flex;align-items:center;gap:.4em;min-height:36px;padding:0 12px;border:0;border-radius:999px;background:var(--blue);color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
-.lessons .free:hover{background:#2F4766}
-.lessons .free svg{width:16px;height:16px}
-.total{margin-top:16px;font-size:14px;color:var(--muted)}
+.lessons .t{line-height:1.6;overflow-wrap:anywhere}
+.lessons .tag{font-size:12px;font-weight:700;line-height:1;padding:6px 10px;border-radius:999px;background:var(--blue);color:#fff;white-space:nowrap}
 .midcta{margin-top:40px;padding-top:32px;border-top:1px dashed var(--line);text-align:center}
 .midcta p{font-weight:900;font-size:20px}
-.midcta .row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 24px;margin-top:14px}
+.midcta .row-c{margin-top:14px}
 
-/* fit */
-.fit{display:grid;gap:16px}
-@media (min-width:760px){.fit{grid-template-columns:1fr 1fr}}
-.fit>div{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px 26px}
-.fit h3{font-size:18px}
-.fit ul{margin:12px 0 0;padding-left:1.2em}
-.fit li{margin-top:6px}
-.fit .no-fit h3{color:var(--muted)}
+/* coming soon */
+.soon-grid{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+@media (min-width:560px){.soon-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:960px){.soon-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.soon{border:1.5px dashed #C3B8A6;border-radius:12px;padding:14px 16px 16px}
+.soon .tag{display:inline-block;font-size:12px;font-weight:700;line-height:1.5;letter-spacing:.04em;color:var(--muted);background:#ECE6DB;border-radius:999px;padding:2px 10px}
+.soon h3{font-size:16px;font-weight:700;margin-top:8px}
+.soon p{font-size:14px;line-height:1.7;color:var(--muted);margin-top:4px}
+.soon-note{max-width:40em;margin:24px auto 0;text-align:center;font-size:14px;color:var(--muted)}
+
+/* community */
+.comm{display:grid;gap:14px;max-width:960px;margin:0 auto}
+@media (min-width:900px){.comm{grid-template-columns:repeat(3,1fr)}}
+.comm>div{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:22px 22px 24px}
+.comm .ic{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink)}
+.comm .ic svg{width:22px;height:22px}
+.comm h3{font-size:18px;margin-top:12px}
+.comm p{margin-top:6px;color:var(--muted);font-size:15px}
+.comm-note{max-width:40em;margin:28px auto 0;text-align:center;font-size:14px;color:var(--muted)}
+.comm-cta{margin-top:20px}
 
 /* teacher */
 .teacher{display:grid;gap:20px;align-items:start;max-width:760px;margin:0 auto}
@@ -239,7 +260,7 @@ section{padding:80px 0}
 .pay{font-size:13px;color:var(--muted);margin-top:14px}
 .steps{max-width:660px;margin:28px auto 0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:s}
 @media (min-width:700px){.steps{grid-template-columns:repeat(3,1fr)}}
-.steps li{counter-increment:s;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px}
+.steps li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px}
 .steps li::before{content:counter(s);display:inline-grid;place-items:center;width:24px;height:24px;margin-right:8px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700}
 .steps-title{max-width:660px;margin:36px auto 0;font-size:15px}
 
@@ -256,7 +277,7 @@ section{padding:80px 0}
 .closing{text-align:center}
 .closing h2{font-size:clamp(24px,4.4vw,36px);font-weight:900}
 .closing p{margin-top:12px;color:var(--muted)}
-.closing .row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 24px;margin-top:28px}
+.closing .row-c{margin-top:28px}
 
 footer{border-top:1px solid var(--line);padding:28px 0 120px;font-size:13px;color:var(--muted)}
 footer nav{display:flex;flex-wrap:wrap;gap:0 22px;margin-bottom:10px}
@@ -271,20 +292,16 @@ footer p{text-wrap:pretty}
 .buybar .p small{font-size:12px;font-weight:700;margin-left:2px}
 .buybar .p span{display:block;font-size:11px;font-weight:500;color:var(--muted)}
 @media (min-width:760px){.buybar{display:none}}
-@media (prefers-reduced-motion:reduce){.buybar{transition:none}}
+@media (prefers-reduced-motion:reduce){.buybar,.all summary::after,.faq-list summary::after{transition:none}}
 </style>
 </head>
 <body>
-
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" fill-opacity=".18"/><path d="M9.5 7.8v8.4c0 .5.6.8 1 .5l6.3-4.2a.6.6 0 0 0 0-1L10.5 7.3c-.4-.3-1 0-1 .5Z" fill="currentColor"/></symbol>
-</svg>
 
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#top">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#AE4A24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/><path d="M22 10v6"/></svg>
-      Claude Code 入門
+      <span>Nipporia<span class="sub"> AI Academy</span></span>
     </a>
     <div class="top-actions">
       <a class="login" href="/login">ログイン</a>
@@ -296,7 +313,8 @@ footer p{text-wrap:pretty}
 <main>
 <section class="hero" id="top">
   <div class="wrap hero-grid">
-    <h1><span class="ib"><span class="hl">ターミナルなし</span>で、</span><span class="ib">Claude Code を</span><span class="ib">はじめる。</span></h1>
+    <p class="eyebrow">Nipporia AI Academy・動画講座のメンバーシップ</p>
+    <h1><span class="ib">Claude Code を、</span><span class="ib"><span class="hl">安全に</span>使いこなす。</span></h1>
 
     <figure class="player" id="sample">
       <div class="frame">
@@ -304,25 +322,25 @@ footer p{text-wrap:pretty}
           <source src="media/sample-c3-lesson01.mp4" type="video/mp4">
         </video>
       </div>
-      <figcaption>「コードを書かずに、自分のサイトを作って公開する」の第1回「これから作るもの」を、そのまま公開しています。登録も、説明会の予約もいりません。</figcaption>
+      <figcaption>講座「コードを書かずに、自分のサイトを作って公開する」の第1回です。登録しなくても、ここでそのまま見られます。</figcaption>
     </figure>
 
-    <p class="lead">アプリの準備から、最初のお願い、変更の<span class="nw">確かめ方</span>、計画の立て方まで。慣れてきたら、続編でスキルやフックを足して、自分の仕事に合わせます。1本60〜90秒の動画で、ひとつずつ覚えていきます。</p>
+    <p class="lead">頼み方、結果の確かめ方、権限とデータの守り方。Claude Code を効率よく、安全に使うための動画講座が、ひとつのメンバーシップで全部見られます。わからないところは、コミュニティで質問できます。</p>
 
     <div class="cta">
       <div class="row">
-        <a class="btn" href="#sample" data-play><svg class="icon" style="width:22px;height:22px" aria-hidden="true"><use href="#i-play"/></svg>第1回を無料で見る</a>
-        <a class="link" href="#price">料金と内容を見る</a>
+        <a class="btn" href="#price">メンバーになる</a>
+        <a class="link" href="#curriculum">無料で見られる回を探す</a>
       </div>
       <p class="price-hint"><span class="nw">月額 <b class="num">¥4,980</b>（税込）</span> <span class="nw">いつでも解約できます</span></p>
     </div>
 
     <ul class="facts">
-      <li><b class="num">2</b>講座・全<b class="num">28</b>回</li>
-      <li>合計 約<b class="num">35</b>分</li>
-      <li>1本<b class="num">60〜90</b>秒</li>
-      <li>字幕つき</li>
-      <li>第1回は無料</li>
+      <li><b class="num">3</b>講座・全<b class="num">39</b>回</li>
+      <li>合計 約<b class="num">52</b>分</li>
+      <li>全回字幕つき</li>
+      <li>各講座の約3割は無料</li>
+      <li>これから増える講座も追加料金なし</li>
     </ul>
   </div>
 </section>
@@ -335,29 +353,29 @@ footer p{text-wrap:pretty}
     <picture><source srcset="media/illo-worry.webp" type="image/webp"><img class="illo" src="media/illo-worry.png" width="555" height="438" alt="ノートパソコンの黒い画面を見て、困った顔をしている人のイラスト" loading="lazy"></picture>
     <div class="worries">
       <div class="worry">
-        <q>何から始めればいいのか、わからない</q>
-        <p>用意するもの、アプリのインストール、最初のお願いの仕方。この順番で見ていけば、迷うところはほとんどありません。</p>
-        <a class="jump" href="#l3">第3回・第4回を見る</a>
+        <q>どう頼めば思いどおりに動くのか、わからない</q>
+        <p>やってほしいことを具体的に書く。確かめ方も一緒に渡す。迷ったら、先に質問してもらう。頼み方のコツは「入門」の第15回にまとめました。この回は無料です。</p>
+        <a class="jump" href="#course-nyumon">「Claude Code 入門」を見る</a>
       </div>
       <div class="worry">
         <q>AI が勝手にファイルを書き換えそうで怖い</q>
-        <p>ファイルを書き換える前に、ちゃんと確認してくれます。どこが変わるのかを見てから、受け入れるかどうかを決めればいいんです。</p>
-        <a class="jump" href="#l5">第5回を見る</a>
+        <p>Manual モードなら、ファイルを書き換える前に毎回確認してくれます。どこが変わるのかを見てから、承認するか拒否するかを決めればいいんです。</p>
+        <a class="jump" href="#course-nyumon">「Claude Code 入門」を見る</a>
       </div>
       <div class="worry">
-        <q>黒い画面（ターミナル）は使いたくない</q>
-        <p>この講座で使うのは、デスクトップアプリです。コマンドは覚えなくて大丈夫。</p>
-        <a class="jump" href="#l2">第2回・第3回を見る</a>
+        <q>できあがったものが正しいのか、自分では判断できない</q>
+        <p>変わった行だけを並べた画面（差分ビュー）で、どこがどう変わったのかを見られます。気になる行には、そのままコメントで直しを頼めます。</p>
+        <a class="jump" href="#course-nyumon">「Claude Code 入門」を見る</a>
       </div>
       <div class="worry">
-        <q>長い講座は、最後まで続かない</q>
-        <p>1本は60〜90秒。1回で覚えることは1つだけです。通勤中や休み時間に、1本ずつ進められます。</p>
-        <a class="jump" href="#curriculum">全28回を見る</a>
+        <q>大事なファイルや設定には、触ってほしくない</q>
+        <p>「これは許可する」「これは毎回聞く」「これはさせない」。そんなルールを設定ファイルに書いておけます。CLAUDE.md に書くお願いとちがって、Claude Code が必ず守らせるルールです。</p>
+        <a class="jump" href="#course-jibunshiyou">「Claude Code を自分仕様にする」を見る</a>
       </div>
     </div>
     <div class="bridge">
       <picture><source srcset="media/illo-relief.webp" type="image/webp"><img class="illo" src="media/illo-relief.png" width="555" height="438" alt="明るいアプリの画面を見て、ほっとした顔で笑っている人のイラスト" loading="lazy"></picture>
-      <p class="bridge-text">ひとつずつ動画で見ていけば、<br><span class="mk">ちゃんと使えるようになります。</span></p>
+      <p class="bridge-text">頼み方と確かめ方がわかれば、<br><span class="mk">安心して任せられます。</span></p>
     </div>
   </div>
 </section>
@@ -370,29 +388,29 @@ footer p{text-wrap:pretty}
 
     <div class="features">
       <div class="feature">
-        <img src="media/l05-approve.jpg" width="1500" height="880" loading="lazy" alt="第5回の画面。Claude Code がファイルを編集する前に確認を求め、変わる部分を見て「拒否」か「承認」かを選ぶ様子">
+        <img src="media/l05-approve.jpg" width="1500" height="880" loading="lazy" alt="「入門」第5回の画面。Claude Code がファイルを編集する前に確認を求め、変わる部分を見て「拒否」か「承認」かを選ぶ様子">
         <div>
           <h3>変更は、確かめてから受け入れる</h3>
-          <p>ファイルが書き換わる前に、何がどう変わるのかを見て、承認か拒否かを選べます。毎回聞いてもらうか、ある程度まかせるか。その切り替え（権限モード）も、この回で。</p>
-          <a class="jump" href="#l5">第5回を見る</a>
+          <p>ファイルが書き換わる前に、何がどう変わるのかを見て、承認か拒否かを選べます。毎回聞いてもらうか、ある程度まかせるか。その切り替え（権限モード）も「入門」の第5回で見ていきます。</p>
+          <a class="jump" href="#course-nyumon">「Claude Code 入門」を見る</a>
         </div>
       </div>
 
       <div class="feature">
-        <img src="media/l10-comment.jpg" width="1620" height="780" loading="lazy" alt="第10回の画面。変わった行だけを並べた差分ビューで、ある行に「もっとやさしい言い方にして」とコメントを付けた様子">
+        <img src="media/l10-comment.jpg" width="1620" height="780" loading="lazy" alt="「入門」第10回の画面。変わった行だけを並べた差分ビューで、ある行に「もっとやさしい言い方にして」とコメントを付けた様子">
         <div>
           <h3>気になる行に、コメントで直してもらう</h3>
-          <p>変わった行だけを並べた画面（差分ビュー）で、直してほしい行にそのままコメントを書けます。あとは Claude Code が読んで、書き直してくれます。</p>
-          <a class="jump" href="#l10">第10回を見る</a>
+          <p>変わった行だけを並べた画面（差分ビュー）で、直してほしい行にそのままコメントを書けます。あとは Claude Code が読んで、書き直してくれます。「入門」の第10回です（無料）。</p>
+          <a class="jump" href="#course-nyumon">「Claude Code 入門」を見る</a>
         </div>
       </div>
 
       <div class="feature">
-        <img src="media/l07-mention.jpg" width="1500" height="900" loading="lazy" alt="第7回の画面。入力欄から「@app.js を読んで、何をするプログラムか短く教えて」と頼んだ様子">
+        <img src="media/l07-mention.jpg" width="1500" height="900" loading="lazy" alt="「入門」第7回の画面。入力欄から「@app.js を読んで、何をするプログラムか短く教えて」と頼んだ様子">
         <div>
           <h3>@ でファイルを指定して、的確に頼む</h3>
           <p>入力欄で @ を打つと、ファイルの一覧が出ます。どのファイルを見てほしいかを伝えるだけで、答えがぐっと的確になります。</p>
-          <a class="jump" href="#l7">第7回を見る</a>
+          <a class="jump" href="#course-nyumon">「Claude Code 入門」を見る</a>
         </div>
       </div>
     </div>
@@ -404,137 +422,197 @@ footer p{text-wrap:pretty}
 <section class="band" id="curriculum">
   <div class="wrap">
     <div class="sec-head">
-      <h2>2つの講座、全28回の内容</h2>
-      <p>1回1テーマ。まず「Claude Code 入門」を上から順に。見終えたら、続編の「自分仕様にする」へ進みます。メンバーなら、どちらも全部見られます。</p>
+      <h2>いま見られる<span class="mk">3つの講座</span></h2>
+      <p>全39回・合計 約52分。どの講座も、約3割の回は登録しなくても無料で見られます。メンバーになると、すべての回が見られます。</p>
     </div>
-    <div class="course">
-    <div class="course-head">
-      <h3><span class="cno">講座 1</span>Claude Code 入門</h3>
-      <p>全20回・合計 約24分。はじめて使う人のための講座です。</p>
+
+    <div class="courses">
+      <article class="ccard" id="course-nyumon">
+        <figure class="cover"><img src="media/course-cover-nyumon.webp" width="1600" height="900" loading="lazy" alt="Claude Code 入門"></figure>
+        <div class="cbody">
+          <p class="cno">講座 1・はじめての人へ</p>
+          <h3>Claude Code 入門</h3>
+          <p class="cdesc">Claude Code をはじめて使う人のための講座です。デスクトップアプリの準備から、最初のお願い、変更の確かめ方、計画の立て方まで、順番に見ていきます。</p>
+          <ul class="cmeta"><li>全20回</li><li>1本60〜90秒</li><li>合計 約24分</li></ul>
+          <h4 class="free-h">無料で見られる回<small>20回のうち6回</small></h4>
+          <ul class="free-list two">
+            <li><span class="no">第1回</span><span><span class="nw">Claude Code</span>ってなに？</span></li>
+            <li><span class="no">第4回</span><span>はじめてのセッションを始めよう</span></li>
+            <li><span class="no">第10回</span><span>差分ビューでコメントして直してもらう</span></li>
+            <li><span class="no">第12回</span><span>CLAUDE.md でプロジェクトのルールを伝える</span></li>
+            <li><span class="no">第15回</span><span>上手な頼み方</span></li>
+            <li><span class="no">第18回</span><span>よくある作業を頼む</span></li>
+          </ul>
+          <div class="acts">
+            <a class="btn ghost" href="/classroom/course/1795069779737-c66hwbqk">無料の回を見る</a>
+          </div>
+          <details class="all">
+            <summary>全20回の内容を見る</summary>
+            <ol class="lessons">
+              <li><span class="no">第1回</span><span class="t"><span class="nw">Claude Code</span>ってなに？</span><span class="tag">無料</span></li>
+              <li><span class="no">第2回</span><span class="t"><span class="nw">Claude Code</span>はどこで使える？</span></li>
+              <li><span class="no">第3回</span><span class="t">使い始めるための準備</span></li>
+              <li><span class="no">第4回</span><span class="t">はじめてのセッションを始めよう</span><span class="tag">無料</span></li>
+              <li><span class="no">第5回</span><span class="t">変更を確認して受け入れる</span></li>
+              <li><span class="no">第6回</span><span class="t">作業の途中で指示を変える</span></li>
+              <li><span class="no">第7回</span><span class="t">@でファイルを指定して頼む</span></li>
+              <li><span class="no">第8回</span><span class="t">画像やファイルを添付して頼む</span></li>
+              <li><span class="no">第9回</span><span class="t">/ でコマンドやスキルを呼び出す</span></li>
+              <li><span class="no">第10回</span><span class="t">差分ビューでコメントして直してもらう</span><span class="tag">無料</span></li>
+              <li><span class="no">第11回</span><span class="t">作業を止めずに、ちょっとした質問をする</span></li>
+              <li><span class="no">第12回</span><span class="t">CLAUDE.md でプロジェクトのルールを伝える</span><span class="tag">無料</span></li>
+              <li><span class="no">第13回</span><span class="t">いくつかの作業を同時に進める</span></li>
+              <li><span class="no">第14回</span><span class="t">ふりかえりと次の一歩</span></li>
+              <li><span class="no">第15回</span><span class="t">上手な頼み方</span><span class="tag">無料</span></li>
+              <li><span class="no">第16回</span><span class="t">計画してから作ってもらう</span></li>
+              <li><span class="no">第17回</span><span class="t">ファイルとターミナルをアプリの中で開く</span></li>
+              <li><span class="no">第18回</span><span class="t">よくある作業を頼む</span><span class="tag">無料</span></li>
+              <li><span class="no">第19回</span><span class="t">前のセッションを見つけて続ける</span></li>
+              <li><span class="no">第20回</span><span class="t">会話が長くなったら</span></li>
+            </ol>
+          </details>
+        </div>
+      </article>
+
+      <article class="ccard" id="course-jibunshiyou">
+        <figure class="cover"><img src="media/course-cover-jibunshiyou.webp" width="1600" height="900" loading="lazy" alt="Claude Code を自分仕様にする"></figure>
+        <div class="cbody">
+          <p class="cno">講座 2・入門を見終えたら</p>
+          <h3>Claude Code を自分仕様にする</h3>
+          <p class="cdesc">スキル、コネクタ、プラグイン、権限のルール、サブエージェント、フック。道具を少しずつ足して、Claude Code を自分の仕事に合わせていきます。</p>
+          <ul class="cmeta"><li>全8回</li><li>1本60〜90秒</li><li>合計 約11分</li></ul>
+          <h4 class="free-h">無料で見られる回<small>8回のうち3回</small></h4>
+          <ul class="free-list">
+            <li><span class="no">第1回</span><span>自分仕様にする道具の全体図</span></li>
+            <li><span class="no">第2回</span><span>自分のスキルを作る</span></li>
+            <li><span class="no">第7回</span><span>フックで自動化する</span></li>
+          </ul>
+          <div class="acts">
+            <a class="btn ghost" href="/classroom/course/1795093146757-lmdql2pa">無料の回を見る</a>
+          </div>
+          <details class="all">
+            <summary>全8回の内容を見る</summary>
+            <ol class="lessons">
+              <li><span class="no">第1回</span><span class="t">自分仕様にする道具の全体図</span><span class="tag">無料</span></li>
+              <li><span class="no">第2回</span><span class="t">自分のスキルを作る</span><span class="tag">無料</span></li>
+              <li><span class="no">第3回</span><span class="t">コネクタでほかのツールとつなぐ</span></li>
+              <li><span class="no">第4回</span><span class="t">プラグインを入れる</span></li>
+              <li><span class="no">第5回</span><span class="t">権限のルールを決める</span></li>
+              <li><span class="no">第6回</span><span class="t">サブエージェントに任せる</span></li>
+              <li><span class="no">第7回</span><span class="t">フックで自動化する</span><span class="tag">無料</span></li>
+              <li><span class="no">第8回</span><span class="t">最終回：ふりかえりと次の一歩</span></li>
+            </ol>
+          </details>
+        </div>
+      </article>
+
+      <article class="ccard" id="course-site">
+        <figure class="cover"><img src="media/course-cover-no-code-website.webp" width="1600" height="900" loading="lazy" alt="コードを書かずに、自分のサイトを作って公開する"></figure>
+        <div class="cbody">
+          <p class="cno">講座 3・プログラミングの経験がない人へ</p>
+          <h3>コードを書かずに、自分のサイトを作って公開する</h3>
+          <p class="cdesc">Claude Code に頼んで自分のサイトを作り、GitHub Pages でインターネットに公開するところまで進めます。例に出てくる弁護士は、架空の人物です。</p>
+          <ul class="cmeta"><li>全11回</li><li>1本1〜2分</li><li>合計 約17分</li></ul>
+          <h4 class="free-h">無料で見られる回<small>11回のうち4回</small></h4>
+          <ul class="free-list two">
+            <li><span class="no">第1回</span><span>これから作るもの</span></li>
+            <li><span class="no">第2回</span><span>ページを作ってもらう</span></li>
+            <li><span class="no">第6回</span><span>HTML と CSS をのぞいてみる</span></li>
+            <li><span class="no">第9回</span><span>スキルでデザインを良くしてもらう</span></li>
+          </ul>
+          <div class="acts">
+            <a class="btn ghost" href="/classroom/course/1795437269884-kd277y5m">無料の回を見る</a>
+          </div>
+          <details class="all">
+            <summary>全11回の内容を見る</summary>
+            <ol class="lessons">
+              <li><span class="no">第1回</span><span class="t">これから作るもの</span><span class="tag">無料</span></li>
+              <li><span class="no">第2回</span><span class="t">ページを作ってもらう</span><span class="tag">無料</span></li>
+              <li><span class="no">第3回</span><span class="t">確かめて、手直ししてもらう</span></li>
+              <li><span class="no">第4回</span><span class="t">GitHub のアカウントを作る</span></li>
+              <li><span class="no">第5回</span><span class="t">GitHub Pages で公開する</span></li>
+              <li><span class="no">第6回</span><span class="t">HTML と CSS をのぞいてみる</span><span class="tag">無料</span></li>
+              <li><span class="no">第7回</span><span class="t">GitHub とつないで、Claude に公開してもらう</span></li>
+              <li><span class="no">第8回</span><span class="t">スキルを入れる</span></li>
+              <li><span class="no">第9回</span><span class="t">スキルでデザインを良くしてもらう</span><span class="tag">無料</span></li>
+              <li><span class="no">第10回</span><span class="t">無料の画像を使う</span></li>
+              <li><span class="no">第11回</span><span class="t">最終回：ふりかえりと次の一歩</span></li>
+            </ol>
+          </details>
+        </div>
+      </article>
     </div>
-    <div class="chapters">
-      <div class="chapter">
-        <h4>はじめる準備<small>第1〜4回</small></h4>
-        <ol class="lessons">
-          <li id="l1"><span class="no">第1回</span><span class="t"><span class="nw">Claude Code</span>ってなに？</span><button class="free" type="button" data-play><svg aria-hidden="true"><use href="#i-play"/></svg>無料で見る</button></li>
-          <li id="l2"><span class="no">第2回</span><span class="t"><span class="nw">Claude Code</span>はどこで使える？</span><span class="d num">1:06</span></li>
-          <li id="l3"><span class="no">第3回</span><span class="t">使い始めるための準備</span><span class="d num">1:14</span></li>
-          <li id="l4"><span class="no">第4回</span><span class="t">はじめてのセッションを始めよう<small>フォルダを選んで、最初のお願いをするまで</small></span><span class="d num">1:29</span></li>
-        </ol>
-      </div>
-      <div class="chapter">
-        <h4>頼む・確かめる・直してもらう<small>第5〜11回</small></h4>
-        <ol class="lessons" start="5">
-          <li id="l5"><span class="no">第5回</span><span class="t">変更を確認して受け入れる</span><span class="d num">1:10</span></li>
-          <li id="l6"><span class="no">第6回</span><span class="t">作業の途中で指示を変える</span><span class="d num">1:01</span></li>
-          <li id="l7"><span class="no">第7回</span><span class="t">@ でファイルを指定して頼む</span><span class="d num">1:00</span></li>
-          <li id="l8"><span class="no">第8回</span><span class="t">画像やファイルを添付して頼む</span><span class="d num">1:04</span></li>
-          <li id="l9"><span class="no">第9回</span><span class="t">/ でコマンドやスキルを呼び出す<small>よく使う作業を、短いコマンドで呼び出す</small></span><span class="d num">1:08</span></li>
-          <li id="l10"><span class="no">第10回</span><span class="t">差分ビューでコメントして直してもらう<small>変わった行だけを並べた画面で、行ごとに頼む</small></span><span class="d num">1:04</span></li>
-          <li id="l11"><span class="no">第11回</span><span class="t">作業を止めずに、ちょっとした質問をする</span><span class="d num">1:15</span></li>
-        </ol>
-      </div>
-      <div class="chapter">
-        <h4>もっと便利に・第1部のまとめ<small>第12〜14回</small></h4>
-        <ol class="lessons" start="12">
-          <li id="l12"><span class="no">第12回</span><span class="t">CLAUDE.md でプロジェクトのルールを伝える<small>毎回の説明を、ファイルに書いておく</small></span><span class="d num">1:23</span></li>
-          <li id="l13"><span class="no">第13回</span><span class="t">いくつかの作業を同時に進める</span><span class="d num">1:03</span></li>
-          <li id="l14"><span class="no">第14回</span><span class="t">ふりかえりと次の一歩</span><span class="d num">1:21</span></li>
-        </ol>
-      </div>
-      <div class="chapter">
-        <h4>第2部 もっと上手に使う<small>第15〜20回</small></h4>
-        <ol class="lessons" start="15">
-          <li id="l15"><span class="no">第15回</span><span class="t">上手な頼み方<small>具体的に頼んで、確かめ方も一緒に渡す</small></span><span class="d num">1:16</span></li>
-          <li id="l16"><span class="no">第16回</span><span class="t">計画してから作ってもらう<small>Plan モードで、編集の前に計画を確かめる</small></span><span class="d num">1:10</span></li>
-          <li id="l17"><span class="no">第17回</span><span class="t">ファイルとターミナルをアプリの中で開く</span><span class="d num">1:10</span></li>
-          <li id="l18"><span class="no">第18回</span><span class="t">よくある作業を頼む<small>コードを理解する・バグを直す・テストを書く</small></span><span class="d num">1:08</span></li>
-          <li id="l19"><span class="no">第19回</span><span class="t">前のセッションを見つけて続ける</span><span class="d num">1:05</span></li>
-          <li id="l20"><span class="no">第20回</span><span class="t">会話が長くなったら<small>/context で確かめて、/compact でまとめる</small></span><span class="d num">1:27</span></li>
-        </ol>
-      </div>
-    </div>
-    </div>
-    <div class="course" id="course2">
-    <div class="course-head">
-      <h3><span class="cno">講座 2・続編</span>Claude Code を自分仕様にする</h3>
-      <p>全8回・合計 約11分。入門を見終えた人が、Claude Code を自分の仕事に合わせるための講座です。</p>
-    </div>
-    <div class="chapters">
-      <div class="chapter">
-        <ol class="lessons">
-          <li id="c2-l1"><span class="no">第1回</span><span class="t">自分仕様にする道具の全体図<small>CLAUDE.md・スキル・MCP・サブエージェント・フック・プラグイン</small></span><span class="d num">1:30</span></li>
-          <li id="c2-l2"><span class="no">第2回</span><span class="t">自分のスキルを作る<small>SKILL.md に手順を書いて、/名前 で呼び出す</small></span><span class="d num">1:30</span></li>
-          <li id="c2-l3"><span class="no">第3回</span><span class="t">コネクタでほかのツールとつなぐ<small>カレンダーやチャットを、Claude から直接使う</small></span><span class="d num">1:23</span></li>
-          <li id="c2-l4"><span class="no">第4回</span><span class="t">プラグインを入れる<small>入れる前に、出どころと中身を確かめる</small></span><span class="d num">1:23</span></li>
-          <li id="c2-l5"><span class="no">第5回</span><span class="t">権限のルールを決める<small>allow / ask / deny を settings.json に書く</small></span><span class="d num">1:28</span></li>
-          <li id="c2-l6"><span class="no">第6回</span><span class="t">サブエージェントに任せる<small>別の会話で作業して、要約だけを返してもらう</small></span><span class="d num">1:29</span></li>
-          <li id="c2-l7"><span class="no">第7回</span><span class="t">フックで自動化する<small>決まったタイミングで、必ず動くコマンド</small></span><span class="d num">1:22</span></li>
-          <li id="c2-l8"><span class="no">第8回</span><span class="t">ふりかえりと次の一歩<small>どの道具から足すかのまとめ</small></span><span class="d num">1:18</span></li>
-        </ol>
-      </div>
-    </div>
-    </div>
-    <p class="total num">2講座・全28回・合計 約35分</p>
+
     <div class="midcta">
-      <p>まずは第1回を、1分だけ。</p>
-      <div class="row">
-        <a class="btn" href="#sample" data-play><svg class="icon" style="width:22px;height:22px" aria-hidden="true"><use href="#i-play"/></svg>第1回を無料で見る</a>
-        <a class="link" href="#price">料金を見る</a>
+      <p>3つの講座を、全部見られます。</p>
+      <div class="row-c">
+        <a class="btn" href="#price">メンバーになる</a>
+        <a class="link" href="#faq">よくある質問を読む</a>
       </div>
     </div>
   </div>
 </section>
 
-<section id="compare">
+<section id="soon">
   <div class="wrap">
     <div class="sec-head">
-      <h2>ほかの学び方と、くらべると</h2>
-      <p>スクールは、質問や添削がついて数か月。この講座は、動画だけで2講座・合計約35分です。</p>
+      <h2>これから追加する予定の講座</h2>
+      <p>下の講座は、いま準備しているところです。まだ見られません。追加されたら、メンバーは追加の料金なしで見られます。</p>
     </div>
-    <div class="compare-wrap">
-      <table class="compare">
-        <thead>
-          <tr><td></td><th scope="col">スクール・<br>学び放題</th><th scope="col" class="us">この講座</th></tr>
-        </thead>
-        <tbody>
-          <tr><th scope="row">料金</th><td><span class="nw">約4万〜</span><span class="nw">25万円</span><small>月額制なら <span class="nw">月1.6万円ほど</span></small></td><td class="us"><b class="num">月¥4,980</b>（税込）<small>年額なら <span class="nw num">¥49,800</span></small></td></tr>
-          <tr><th scope="row">始めるまで</th><td>無料相談や説明会を予約</td><td class="us">予約なし。第1回はこのページで見られます</td></tr>
-          <tr><th scope="row">期間</th><td>3週間〜3か月</td><td class="us">2講座で 合計 約35分</td></tr>
-          <tr><th scope="row">質問・添削</th><td>あり</td><td class="us">なし（動画だけ）</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="compare-note">質問しながら作品まで作りたいなら、スクールが向いています。まず全体をつかみたいなら、この講座から始めてください。</p>
-    <p class="compare-src">スクール・学び放題の料金と期間は、2026年11月に「claude code 講座」で検索して上位に出た講座の公開情報をもとにした目安です。</p>
+    <ul class="soon-grid">
+      <li class="soon"><span class="tag">今後追加予定</span><h3>Web アプリを作る</h3><p>入力したデータを保存できる、小さな Web アプリを作ります。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>スマホアプリを作る</h3><p>スマホで動くアプリを、Claude Code と一緒に作ります。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>ブラウザで遊べるゲームを作る</h3><p>かんたんなゲームを作って、遊びながら直していきます。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>アニメーション動画を作る</h3><p>動きのある動画を、コードで作ります。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>動きのある Web ページを作る</h3><p>クリックやスクロールに反応するページを作ります。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>くり返しの作業を、決まった時間に任せる</h3><p>毎日や毎週の作業を、スケジュールで動かします。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>表やデータを整理してもらう</h3><p>CSV や表の集計、並べ替えを頼みます。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>Python でデータを分析する</h3><p>データを読み込んで、グラフにするまで。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>資料や文書づくりを手伝ってもらう</h3><p>下書きや、決まった形の文書づくりを頼みます。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>Git と GitHub の基本</h3><p>変更の記録の残し方と、元への戻し方。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>GitHub からレビューや修正を頼む</h3><p>GitHub の上から、Claude Code に作業を頼みます。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>ブラウザの操作を任せる</h3><p>Chrome での確認や操作を、Claude Code に任せます。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>テストを書いて、壊れていないか確かめる</h3><p>作ったものが動くかどうかを、テストで確かめます。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>安全に使うための設定</h3><p>権限やデータの扱いを、もう一歩くわしく。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>チームで Claude Code を使う</h3><p>設定やルールを、チームで共有する方法です。</p></li>
+      <li class="soon"><span class="tag">今後追加予定</span><h3>ターミナルで Claude Code を使う</h3><p>アプリのかわりに、ターミナルから使う方法です。</p></li>
+    </ul>
+    <p class="soon-note">内容や順番は変わることがあります。公開の時期は、まだ決まっていません。</p>
+  </div>
+</section>
 
-    <div class="sec-head fit-head">
-      <h2>この講座が向いている人</h2>
+<section class="band" id="community">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>止まったときは、<span class="mk">コミュニティで聞けます</span></h2>
+      <p>メンバーになると、講座のコミュニティに投稿できます。ひとりで調べても進めないとき、使ってみてください。</p>
     </div>
-    <div class="fit">
+    <div class="comm">
       <div>
-        <h3>向いている人</h3>
-        <ul>
-          <li>Claude Code を、まだ一度も使ったことがない</li>
-          <li>プログラミングの経験は、少しだけ、またはこれから</li>
-          <li>チャットの AI は使ったことがあり、その先を試したい</li>
-          <li>まず全体をつかんでから、自分のペースで練習したい</li>
-          <li>慣れてきたら、スキルやフックで自分の仕事に合わせたい</li>
-        </ul>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.4v.3"/><path d="M12 16.5h.01"/></svg></span>
+        <h3>質問を投稿する</h3>
+        <p>どの講座の、どの回で止まったのか。何をしたら、どうなったのか。そのまま書いて投稿できます。</p>
       </div>
-      <div class="no-fit">
-        <h3>向いていない人</h3>
-        <ul>
-          <li>アプリを作ってストアに公開するところまで学びたい<br><small>（それは次の講座で扱います）</small></li>
-          <li>ターミナル版の細かい設定や使い方を知りたい</li>
-          <li>すでに Claude Code を毎日使っていて、スキルやフックも自分で書いている</li>
-        </ul>
+      <div>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="m21 16-5-5-8 9"/></svg></span>
+        <h3>画像や動画をつける</h3>
+        <p>画面のスクリーンショットや、操作を録画した動画をつけられます（画像は10MB、動画は100MBまで）。言葉にしにくいところも伝わります。</p>
       </div>
+      <div>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17H5l-2 3V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M21 21l-2-2.5h-6a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2Z"/></svg></span>
+        <h3>答えが返ってくる</h3>
+        <p>ほかのメンバーや、講座をつくった私たちが答えます。ほかの人の質問と答えを読むだけでも、ヒントが見つかります。</p>
+      </div>
+    </div>
+    <p class="comm-note">投稿やコメントはメンバーだけですが、読むだけなら登録なしでもできます。いまのせている投稿は、使い方がわかるように運営が作った見本（サンプル投稿）です。</p>
+    <div class="row-c comm-cta">
+      <a class="btn" href="#price">メンバーになる</a>
+      <a class="link" href="https://academy.nipporia.com/community?tab=posts">投稿の見本を見る</a>
     </div>
   </div>
 </section>
 
-<section class="band" id="teacher">
+<section id="teacher">
   <div class="wrap">
     <div class="sec-head">
       <h2>つくった人</h2>
@@ -542,7 +620,7 @@ footer p{text-wrap:pretty}
     <div class="teacher" style="grid-template-columns:1fr">
       <div>
         <h3>Nipporia（ニッポリア）</h3>
-        <p>Claude Code の公式ドキュメントはとても詳しいのですが、はじめての人には、どこから読めばいいのかがわかりにくいと感じました。そこで、最初に必要なことだけを選んで、1本1分ほどの動画にまとめました。</p>
+        <p>Claude Code の公式ドキュメントはとても詳しいのですが、はじめての人には、どこから読めばいいのかがわかりにくいと感じました。そこで、必要なところだけを選んで、1本1〜2分の動画にまとめています。</p>
         <p>Nipporia は、ソフトウェアやアプリの開発、AI の活用、デジタルマーケティングを手がけています。ふだんの仕事でも Claude Code を使っています。</p>
       </div>
     </div>
@@ -559,34 +637,33 @@ footer p{text-wrap:pretty}
 
       <h3>できるようになること</h3>
       <ul class="gains">
-        <li>Claude Code を準備して、最初のお願いができる</li>
+        <li>具体的に頼んで、確かめ方も一緒に渡せる</li>
         <li>変更を確かめてから、受け入れられる</li>
-        <li>気になる行に、コメントで直してもらえる</li>
-        <li>CLAUDE.md で、プロジェクトのルールを伝えられる</li>
-        <li>大きな作業は、計画を確かめてから作ってもらえる</li>
-        <li>スキルやフックを足して、自分の仕事に合わせられる</li>
+        <li>権限のルールで、触ってほしくないものを守れる</li>
+        <li>CLAUDE.md やスキルで、毎回の説明を減らせる</li>
+        <li>自分のサイトを作って、インターネットに公開できる</li>
+        <li>わからないところを、コミュニティで質問できる</li>
       </ul>
 
       <dl class="terms">
-        <div><dt>動画</dt><dd>2講座・全28回<span class="nw">（合計 約35分）</span>・<span class="nw">全回字幕つき</span></dd></div>
+        <div><dt>動画</dt><dd>3講座・全39回<span class="nw">（合計 約52分）</span>・<span class="nw">全回字幕つき</span></dd></div>
         <div><dt>見られる端末</dt><dd>パソコン・スマホ・タブレット</dd></div>
-        <div><dt>含まれるもの</dt><dd>「Claude Code 入門」（全20回）と、続編「Claude Code を自分仕様にする」（全8回）。<span class="nw">これから増える講座と、</span><span class="nw">コミュニティでの質問や投稿。</span></dd></div>
+        <div><dt>含まれるもの</dt><dd>いまある3つの講座の全レッスン。<span class="nw">これから増える講座。</span><span class="nw">コミュニティでの質問や投稿。</span></dd></div>
         <div><dt>見られる期間</dt><dd>メンバーのあいだは、いつでも。<span class="nw">解約しても、次の更新日までは見られます。</span></dd></div>
         <div><dt>返金</dt><dd>デジタルコンテンツのため、お支払い後の返金はしていません。<span class="nw">解約すれば、次の更新日からは請求されません。</span></dd></div>
       </dl>
 
       <p class="need"><b>別に必要なもの</b>Windows か Mac のパソコンと、Claude の有料プランです。Claude の料金は講座代に入っていないので、最新の金額は Anthropic の公式サイトで確かめてください。</p>
 
-      <!-- 公開後、href を視聴サイトの登録ページ（https://<サイトのドメイン>/register）にしてください -->
       <a class="btn" href="/register?plan=monthly">メンバーになる</a>
       <p class="pay">お支払い：クレジットカード（Stripe の決済ページ）・<a href="/tokushoho">特定商取引法に基づく表記</a></p>
     </div>
 
     <h3 class="steps-title">お申し込みの流れ</h3>
     <ol class="steps">
-      <li>無料で登録して、第1回を見ます</li>
+      <li>無料の回を見て、続けられそうか確かめます</li>
       <li>「メンバーになる」から、月額か年額を選んでお支払いをします</li>
-      <li>すぐに、2つの講座の全レッスンが見られます。入門の第2回から順番にどうぞ</li>
+      <li>すぐに、すべての講座の全レッスンとコミュニティが使えます</li>
     </ol>
   </div>
 </section>
@@ -599,19 +676,31 @@ footer p{text-wrap:pretty}
     <div class="faq-list">
       <details>
         <summary>プログラミングの経験がなくても大丈夫ですか？</summary>
-        <p>大丈夫です。もともと、はじめて使う人のための講座です。最初は、やってほしいことをふだんの言葉で伝えるところから。</p>
+        <p>大丈夫です。どの講座も、やってほしいことをふだんの言葉で伝えるところから始めます。「コードを書かずに、自分のサイトを作って公開する」は、プログラミングの経験がない人に向けて作りました。</p>
+      </details>
+      <details>
+        <summary>どの講座から見ればいいですか？</summary>
+        <p>Claude Code を使うのがはじめてなら、「Claude Code 入門」からどうぞ。自分のサイトを作りたい人は、「コードを書かずに、自分のサイトを作って公開する」から始めてもかまいません。アプリの準備がまだなら、入門の第3回と第4回もあわせて見てください。「Claude Code を自分仕様にする」は、入門を見終えてからがおすすめです。</p>
+      </details>
+      <details>
+        <summary>無料で見られるのは、どの回ですか？</summary>
+        <p>どの講座も、約3割の回が無料です。「入門」は第1・4・10・12・15・18回、「自分仕様にする」は第1・2・7回、「自分のサイトを作って公開する」は第1・2・6・9回。登録しなくても見られます。</p>
+      </details>
+      <details>
+        <summary>これから追加される講座も見られますか？</summary>
+        <p>はい。メンバーなら、追加の料金なしで見られます。「今後追加予定」の講座はいま準備しているところで、公開の時期はまだ決まっていません。</p>
+      </details>
+      <details>
+        <summary>コミュニティでは、何ができますか？</summary>
+        <p>質問を投稿したり、ほかのメンバーの投稿にコメントしたりできます。画像や動画もつけられます。投稿やコメントはメンバーだけ、読むのは登録なしでもできます。いまある投稿は、運営が作った見本です。</p>
       </details>
       <details>
         <summary>AI にパソコンのファイルを触らせるのが不安です。</summary>
-        <p>権限モードを「Manual」にしておけば、ファイルを書き換える前に毎回確認してくれます。どこがどう変わるのかを見てから、承認するか拒否するかを選べます。第5回で、実際の画面を見ながら説明しています。</p>
-      </details>
-      <details>
-        <summary>2つの講座は、どの順番で見ればいいですか？</summary>
-        <p>「Claude Code 入門」から見てください。続編の「Claude Code を自分仕様にする」は、入門を見終えた人向けの内容です。メンバーなら、どちらも追加の料金なしで見られます。</p>
+        <p>権限モードを「Manual」にしておけば、ファイルを書き換える前に毎回確認してくれます。どこがどう変わるのかを見てから、承認するか拒否するかを選べます。「入門」の第5回で、実際の画面を見ながら説明しています。</p>
       </details>
       <details>
         <summary>パソコンは必要ですか？</summary>
-        <p>動画は、スマホやタブレットでも見られます。ただ、Claude Code を実際に使って練習するには、Windows か Mac のパソコンが必要です。</p>
+        <p>動画は、スマホやタブレットでも見られます。ただ、Claude Code を実際に使って練習するには、Windows か Mac のパソコンが必要です。「自分のサイトを作って公開する」では、GitHub のアカウント（無料で作れます）も使います。</p>
       </details>
       <details>
         <summary>アプリの画面が英語でも大丈夫ですか？</summary>
@@ -627,7 +716,7 @@ footer p{text-wrap:pretty}
       </details>
       <details>
         <summary>申し込んだあと、どうやって見ますか？</summary>
-        <p>お支払いが終わると、そのまま視聴サイトで全レッスンが見られます。同じメールアドレスでログインすれば、スマホやタブレットからも見られます。</p>
+        <p>お支払いが終わると、そのまま視聴サイトで、すべての講座の全レッスンが見られます。同じメールアドレスでログインすれば、スマホやタブレットからも見られます。</p>
       </details>
       <details>
         <summary>動画はいつまで見られますか？</summary>
@@ -639,7 +728,7 @@ footer p{text-wrap:pretty}
       </details>
       <details>
         <summary>返金はできますか？</summary>
-        <p>デジタルコンテンツのため、お支払い後の返金はしていません。そのかわり、第1回は登録なしで、ここで全部見られます。続けられそうか確かめてから申し込んでください。こちらの不具合で見られないときは、info@nipporia.com までご連絡ください。</p>
+        <p>デジタルコンテンツのため、お支払い後の返金はしていません。そのかわり、どの講座も約3割の回は登録なしで見られます。続けられそうか確かめてから申し込んでください。こちらの不具合で見られないときは、info@nipporia.com までご連絡ください。</p>
       </details>
       <details>
         <summary>領収書は出ますか？</summary>
@@ -655,11 +744,11 @@ footer p{text-wrap:pretty}
 
 <section>
   <div class="wrap closing">
-    <h2>第1回を見て、続けられそうなら。</h2>
-    <p class="num">月額 ¥4,980（税込）。いつでも解約できます。</p>
-    <div class="row">
-      <a class="btn" href="#price">受講の申し込みへ</a>
-      <a class="link" href="#sample" data-play>第1回をもう一度見る</a>
+    <h2>まずは無料の回から、見てみてください。</h2>
+    <p class="num">続けられそうなら、メンバーに。月額 ¥4,980（税込）、いつでも解約できます。</p>
+    <div class="row-c">
+      <a class="btn" href="#price">メンバーになる</a>
+      <a class="link" href="#curriculum">無料で見られる回を探す</a>
     </div>
   </div>
 </section>
@@ -685,18 +774,6 @@ footer p{text-wrap:pretty}
 
 <script>
 (function(){
-  var v=document.getElementById('lesson1');
-  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.querySelectorAll('[data-play]').forEach(function(el){
-    el.addEventListener('click',function(e){
-      if(!v)return;
-      e.preventDefault();
-      document.getElementById('sample').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});
-      if(el.classList.contains('link'))v.currentTime=0;
-      var p=v.play();if(p&&p.catch)p.catch(function(){});
-    });
-  });
-
   /* スマホ下部の申し込みバー：ヒーローを過ぎてから、料金の場所に来るまで表示 */
   var bar=document.getElementById('buybar'),hero=document.getElementById('top'),price=document.getElementById('price');
   if(!('IntersectionObserver' in window)||!bar)return;
