@@ -1,9 +1,10 @@
-// Loads the Claude Code courses: uploads the lesson videos to S3 and creates the
-// courses and lessons through the admin API (server must be running). Courses that
-// already exist (same title) are skipped. Afterwards run `npm run video:hls`.
+// Loads the courses: uploads the lesson videos to S3 and creates the courses and
+// lessons through the admin API (server must be running). Courses that already exist
+// (same title) are not created again; only their lessons' free flags are brought in
+// line with `freeLessons` (nothing else is changed). Afterwards run `npm run video:hls`.
 // Usage: npm run seed:claude-code -- <videos root>
-//        (folder containing lesson-01/out/video.mp4 ... and c2-01/out/video.mp4 ...)
-// Admin login is read from ADMIN_EMAIL / ADMIN_PASSWORD.
+//        (folder containing lesson-01/out/video.mp4 ..., c2-01/... and c3-01/...)
+// Admin login is read from ADMIN_EMAIL / ADMIN_PASSWORD; SEED_API_URL picks the server.
 import 'reflect-metadata';
 import fs from 'fs';
 import path from 'path';
@@ -18,6 +19,7 @@ interface CourseSeed {
   slug: string;
   /** Local render folders: <root>/<folderPrefix>NN/out/video.mp4 */
   folderPrefix: string;
+  /** Lesson numbers anyone can watch (about 30% of the course, spread out, never the final review). */
   freeLessons: number[];
   lessons: Array<[string, string]>;
 }
@@ -29,7 +31,7 @@ const COURSES: CourseSeed[] = [
     icon: 'CC',
     slug: 'claude-code-intro',
     folderPrefix: 'lesson-',
-    freeLessons: [1],
+    freeLessons: [1, 4, 10, 12, 15, 18],
     lessons: [
   ['Claude Codeってなに？', 'Claude Code がどんな道具で、何を頼めるのかを見ていきます。'],
   ['Claude Codeはどこで使える？', 'ターミナル、エディター、デスクトップアプリ、Web。どこで使っても中身は同じです。'],
@@ -59,7 +61,7 @@ const COURSES: CourseSeed[] = [
     icon: 'C2',
     slug: 'claude-code-custom',
     folderPrefix: 'c2-',
-    freeLessons: [1],
+    freeLessons: [1, 2, 7],
     lessons: [
       ['自分仕様にする道具の全体図', 'CLAUDE.md、スキル、MCP、サブエージェント、フック、プラグイン。どんなときにどれを足すかを見ていきます。'],
       ['自分のスキルを作る', 'SKILL.md を書いて、/名前 で呼び出せる自分だけの手順を作ります。'],
@@ -69,6 +71,27 @@ const COURSES: CourseSeed[] = [
       ['サブエージェントに任せる', '別のコンテキストで作業して、要約だけを返してくれる助っ人を使います。'],
       ['フックで自動化する', '決まったタイミングで必ず動くコマンドを、settings.json に書いておきます。'],
       ['最終回：ふりかえりと次の一歩', '第1回から第7回までのおさらいと、どの道具から足すか、次に読むものです。'],
+    ],
+  },
+  {
+    title: 'コードを書かずに、自分のサイトを作って公開する',
+    description: 'プログラミングの経験がない人のための講座です。1本1〜2分、全11回。Claude Code に頼んで自分のサイトを作り、GitHub Pages でインターネットに公開するまでを順番に見ていきます。例に出てくる弁護士「森野はるか」さんは架空の人物です。',
+    icon: 'C3',
+    slug: 'no-code-website',
+    folderPrefix: 'c3-',
+    freeLessons: [1, 2, 6, 9],
+    lessons: [
+      ['これから作るもの', '完成したページを見ながら、作ってから公開するまでの4つのステップと、準備するものを確かめます。'],
+      ['ページを作ってもらう', '空のフォルダを開き、頼み方の全文を貼り付けて、Claude にページを作ってもらいます。'],
+      ['確かめて、手直ししてもらう', 'ブラウザとスマホの幅で見て、色や文の直しを頼みます。書いてある内容は自分の目で確かめます。'],
+      ['GitHub のアカウントを作る', 'サイトを置く場所として、GitHub のアカウントを作ります。パスワードとパズルは自分で入れます。'],
+      ['GitHub Pages で公開する', 'リポジトリを作って index.html をアップロードし、GitHub Pages でインターネットに公開します。'],
+      ['HTML と CSS をのぞいてみる', 'index.html の中身を見て、HTML と CSS の役割を知ります。CSS は style.css に分けてもらいます。'],
+      ['GitHub とつないで、Claude に公開してもらう', 'GitHub CLI でサインインして、「GitHub に送って」と頼むだけで反映できるようにします。'],
+      ['スキルを入れる', 'デザインのスキル ui-ux-pro-max をマーケットプレイスから入れます。入れる前に、出どころと中身を確かめます。'],
+      ['スキルでデザインを良くしてもらう', 'スキルを使ってデザインを直してもらい、前と後を比べてから GitHub に送ります。'],
+      ['無料の画像を使う', '無料の写真サイトではライセンスを確かめます。画像はフォルダに入れて、Claude に使ってもらいます。'],
+      ['最終回：ふりかえりと次の一歩', '第1回から第10回までのおさらいと、次の一歩です。'],
     ],
   },
 ];
@@ -82,6 +105,34 @@ async function api(method: string, p: string, cookie: string, body?: unknown) {
   const json: any = await res.json().catch(() => null);
   if (!res.ok) throw new Error(`${method} ${p} -> ${res.status} ${JSON.stringify(json)}`);
   return { json, res };
+}
+
+/** Existing course: set isFree on its lessons to match seed.freeLessons. Only isFree is sent. */
+async function syncFreeLessons(seed: CourseSeed, course: any, cookie: string) {
+  // isFree in the lesson list is computed (flag or order <= freeLessonCount), so it only
+  // reflects the stored flag when the course has no free lesson count.
+  if (course.freeLessonCount > 0) throw new Error(`「${seed.title}」 uses freeLessonCount=${course.freeLessonCount}; set it to 0 first.`);
+  const courseId = course.id;
+  const { json } = await api('GET', `/courses/${courseId}/lessons`, cookie);
+  const lessons: any[] = Array.isArray(json) ? json : json?.lessons || json?.data || [];
+  if (lessons.length !== seed.lessons.length) {
+    throw new Error(`「${seed.title}」 has ${lessons.length} lessons, expected ${seed.lessons.length}; not touching it.`);
+  }
+  for (const lesson of lessons) {
+    const expectedTitle = seed.lessons[lesson.order - 1]?.[0];
+    if (expectedTitle !== lesson.title) {
+      throw new Error(`「${seed.title}」 lesson ${lesson.order} is 「${lesson.title}」, expected 「${expectedTitle}」; not touching it.`);
+    }
+  }
+  let changed = 0;
+  for (const lesson of lessons) {
+    const want = seed.freeLessons.includes(lesson.order);
+    if (Boolean(lesson.isFree) === want) continue;
+    await api('PUT', `/admin/lessons/${lesson.id}`, cookie, { isFree: want });
+    changed++;
+    console.log(`  lesson ${lesson.order} 「${lesson.title}」: isFree -> ${want}`);
+  }
+  console.log(`Course 「${seed.title}」 already exists; free lessons ${seed.freeLessons.join(', ')} (${changed} changed).`);
 }
 
 async function main() {
@@ -98,12 +149,13 @@ async function main() {
   const cookie = login.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
 
   const { json: courses } = await api('GET', '/courses', cookie);
-  const existing = (Array.isArray(courses) ? courses : courses?.courses || []).map((c: any) => c.title);
+  const existing: any[] = Array.isArray(courses) ? courses : courses?.courses || [];
   const s3 = new S3StorageService();
 
   for (const seed of COURSES) {
-    if (existing.includes(seed.title)) {
-      console.log(`Course 「${seed.title}」 already exists; skipped.`);
+    const found = existing.find((c) => c.title === seed.title);
+    if (found) {
+      await syncFreeLessons(seed, found, cookie);
       continue;
     }
 

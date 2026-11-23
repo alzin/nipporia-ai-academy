@@ -22,6 +22,8 @@ export interface DashboardCourse {
     freeLessonCount: number;
     order: number;
     lessonCount: number;
+    /** Lessons anyone can watch (isFree or within freeLessonCount). */
+    freeLessonTotal: number;
 }
 
 export interface CourseProgress {
@@ -82,6 +84,7 @@ export class GetDashboardDataUseCase {
                 freeLessonCount: c.freeLessonCount,
                 order: c.order,
                 lessonCount: c.lessonCount,
+                freeLessonTotal: c.freeLessonTotal,
             }));
 
         const totalLessonsAvailable = courses.reduce((sum, c) => sum + c.lessonCount, 0);

@@ -1,6 +1,6 @@
 # Nipporia AI Academy
 
-Japanese video courses for AI tools, with a member community. Live at https://academy.nipporia.com. Courses: 「Claude Code 入門」 (20 short lessons) and 「Claude Code を自分仕様にする」 (8 lessons).
+Japanese video courses for AI tools, with a member community. Live at https://academy.nipporia.com. Courses: 「Claude Code 入門」 (20 short lessons), 「Claude Code を自分仕様にする」 (8 lessons) and 「コードを書かずに、自分のサイトを作って公開する」 (11 lessons).
 
 - `frontend/` — React (CRA) + MUI + Redux Toolkit, all UI in Japanese
 - `backend/` — Express + TypeORM + PostgreSQL (Neon), S3 for media, Stripe for subscriptions
@@ -59,7 +59,9 @@ This stops copied links and the browser's download button. It can't stop someone
 
 ## Seeding the course
 
-`npm run seed:claude-code -- <folder>` uploads the lesson videos and creates both courses: 「Claude Code 入門」 (`<folder>/lesson-NN/out/video.mp4`, 20 lessons) and 「Claude Code を自分仕様にする」 (`<folder>/c2-NN/out/video.mp4`, 8 lessons). Lesson 1 of each is free. Courses that already exist are skipped. Needs `ADMIN_EMAIL` and `ADMIN_PASSWORD`; run `npm run video:hls` afterwards.
+`npm run seed:claude-code -- <folder>` uploads the lesson videos and creates the courses: 「Claude Code 入門」 (`<folder>/lesson-NN/out/video.mp4`, 20 lessons), 「Claude Code を自分仕様にする」 (`<folder>/c2-NN/out/video.mp4`, 8 lessons) and 「コードを書かずに、自分のサイトを作って公開する」 (`<folder>/c3-NN/out/video.mp4`, 11 lessons). Courses that already exist are not created again; the script only sets their lessons' `isFree` flags to match its `freeLessons` lists (and stops without changes if the lesson count or titles don't match). Needs `ADMIN_EMAIL` and `ADMIN_PASSWORD`; `SEED_API_URL` picks the server (default `http://localhost:5000/api`). Run `npm run video:hls` afterwards.
+
+Free lessons (about 30% of each course, spread out so visitors see a bit of everything; the final review lessons stay for members): 入門 1, 4, 10, 12, 15, 18 · 自分仕様 1, 2, 7 · サイト 1, 2, 6, 9. The course cards show the count (「うちN本は無料」) and the lesson list marks them 無料.
 
 ## Google sign-in
 

@@ -7,11 +7,12 @@ import { colors } from "../../theme/theme";
 export const CourseCard = memo(
   ({ course, onClick, isEnrolled, progress = 0, lessonCount = 0, completedCount = 0 }: CourseCardProps) => {
     const isCompleted = progress === 100;
-    const freeCount = course.freeLessonCount || 0;
+    // Free lessons are spread through the course, so say how many, not "the first N".
+    const freeCount = course.freeLessonTotal ?? course.freeLessonCount ?? 0;
 
     const meta = [
       lessonCount > 0 ? `全${lessonCount}本のレッスン` : null,
-      freeCount > 0 ? `最初の${freeCount}本は無料` : null,
+      freeCount > 0 ? `うち${freeCount}本は無料` : null,
     ].filter(Boolean);
 
     return (

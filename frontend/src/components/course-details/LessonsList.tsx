@@ -71,9 +71,12 @@ export const LessonsList: React.FC<LessonsListProps> = ({
       {lessons.map((lesson, index) => {
         // Locked lessons stay clickable: opening one shows the lock notice.
         const isSelected = selectedLesson?.id === lesson.id;
-        const status = lesson.isCompleted ? "完了" : lesson.isLocked ? "メンバー限定" : lesson.isFree ? "無料" : "";
+        const status = lesson.isCompleted ? "完了" : lesson.isLocked ? "メンバー限定" : "";
         const typeLabel = lessonTypeLabel(lesson.lessonType);
-        const accessibleLabel = [lessonNumber(lesson.order), lesson.title, typeLabel, status].filter(Boolean).join("、");
+        const freeLabel = lesson.isFree ? "無料" : "";
+        const accessibleLabel = [lessonNumber(lesson.order), lesson.title, typeLabel, freeLabel, status]
+          .filter(Boolean)
+          .join("、");
 
         const statusIcon = lesson.isCompleted ? (
           <CheckCircle sx={{ fontSize: 20, color: "success.main" }} aria-hidden />
@@ -145,9 +148,28 @@ export const LessonsList: React.FC<LessonsListProps> = ({
                       >
                         {lesson.title}
                       </Typography>
-                      <Typography variant="caption" color="text.secondary" component="p">
-                        {[typeLabel, status].filter(Boolean).join("・")}
-                      </Typography>
+                      <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mt: 0.25 }}>
+                        {lesson.isFree && (
+                          <Box
+                            component="span"
+                            sx={{
+                              px: 0.75,
+                              borderRadius: "6px",
+                              bgcolor: colors.accentSoft,
+                              color: colors.accentHover,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              lineHeight: 1.6,
+                              flexShrink: 0,
+                            }}
+                          >
+                            無料
+                          </Box>
+                        )}
+                        <Typography variant="caption" color="text.secondary" component="p">
+                          {[typeLabel, status].filter(Boolean).join("・")}
+                        </Typography>
+                      </Stack>
                     </Box>
                     {statusIcon && <Box sx={{ display: "flex", flexShrink: 0 }}>{statusIcon}</Box>}
                   </>

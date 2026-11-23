@@ -32,7 +32,8 @@ export class CourseRepository implements ICourseRepository {
     return entities.map(e => this.toDomain(e));
   }
 
-  async findAllWithLessonCounts(isActive?: boolean): Promise<(Course & { lessonCount: number })[]> {
+  /** Courses with their lesson count and how many lessons anyone can watch (isFree or order <= freeLessonCount). */
+  async findAllWithLessonCounts(isActive?: boolean): Promise<(Course & { lessonCount: number; freeLessonTotal: number })[]> {
     const where: any = {};
     if (isActive !== undefined) where.isActive = isActive;
 
@@ -44,7 +45,8 @@ export class CourseRepository implements ICourseRepository {
 
     return entities.map(e => ({
       ...this.toDomain(e),
-      lessonCount: e.lessons?.length || 0
+      lessonCount: e.lessons?.length || 0,
+      freeLessonTotal: (e.lessons || []).filter((l) => l.isFree || l.order <= (e.freeLessonCount || 0)).length
     }));
   }
 

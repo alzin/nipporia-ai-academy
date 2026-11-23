@@ -6,6 +6,8 @@ export interface Course {
   isActive: boolean;
   freeLessonCount?: number;
   lessonCount?: number;
+  /** Lessons anyone can watch (flagged free or within freeLessonCount). */
+  freeLessonTotal?: number;
 }
 
 export interface CourseProgress {
