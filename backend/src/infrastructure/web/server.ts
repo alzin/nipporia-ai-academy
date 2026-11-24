@@ -59,7 +59,7 @@ export class Server {
           imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
           // Lesson videos: encrypted HLS pieces from S3, played through blob: URLs.
           mediaSrc: ["'self'", 'blob:', 'https://*.amazonaws.com'],
-          connectSrc: ["'self'", 'https://*.amazonaws.com', 'https://accounts.google.com/gsi/', 'https://api.stripe.com', 'https://*.google-analytics.com', 'https://*.analytics.google.com', 'https://www.googletagmanager.com', 'https://www.google.com', 'https://google.com', 'https://googleads.g.doubleclick.net', 'https://www.googleadservices.com', 'https://pagead2.googlesyndication.com', 'https://*.clarity.ms'],
+          connectSrc: ["'self'", 'https://*.amazonaws.com', 'https://accounts.google.com/gsi/', 'https://api.stripe.com', 'https://*.google-analytics.com', 'https://analytics.google.com', 'https://*.analytics.google.com', 'https://www.googletagmanager.com', 'https://www.google.com', 'https://google.com', 'https://googleads.g.doubleclick.net', 'https://stats.g.doubleclick.net', 'https://ad.doubleclick.net', 'https://www.googleadservices.com', 'https://pagead2.googlesyndication.com', 'https://*.clarity.ms'],
           frameSrc: ["'self'", 'https://accounts.google.com/gsi/', 'https://js.stripe.com', 'https://hooks.stripe.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://www.googletagmanager.com', 'https://td.doubleclick.net', 'https://bid.g.doubleclick.net'],
           workerSrc: ["'self'", 'blob:'],
           objectSrc: ["'none'"],
