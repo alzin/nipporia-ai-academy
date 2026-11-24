@@ -232,13 +232,6 @@ section{padding:80px 0}
 .comm-note{max-width:40em;margin:28px auto 0;text-align:center;font-size:14px;color:var(--muted)}
 .comm-cta{margin-top:20px}
 
-/* teacher */
-.teacher{display:grid;gap:20px;align-items:start;max-width:760px;margin:0 auto}
-@media (min-width:640px){.teacher{grid-template-columns:120px 1fr;gap:28px}}
-.avatar{width:120px;height:120px;border-radius:50%;border:2px dashed #CBBFAE;display:grid;place-items:center;font-size:13px;color:var(--muted);background:var(--card)}
-.teacher h3{font-size:20px}
-.teacher p{margin-top:10px;color:var(--muted)}
-
 /* price */
 .price{max-width:660px;margin:0 auto;background:var(--card);border:2px solid var(--accent);border-radius:20px;padding:36px 26px;text-align:center}
 .price .label{font-size:15px;font-weight:700;color:var(--accent-ink);letter-spacing:.05em}
@@ -612,21 +605,6 @@ footer p{text-wrap:pretty}
   </div>
 </section>
 
-<section id="teacher">
-  <div class="wrap">
-    <div class="sec-head">
-      <h2>つくった人</h2>
-    </div>
-    <div class="teacher" style="grid-template-columns:1fr">
-      <div>
-        <h3>Nipporia（ニッポリア）</h3>
-        <p>Claude Code の公式ドキュメントはとても詳しいのですが、はじめての人には、どこから読めばいいのかがわかりにくいと感じました。そこで、必要なところだけを選んで、1本1〜2分の動画にまとめています。</p>
-        <p>Nipporia は、ソフトウェアやアプリの開発、AI の活用、デジタルマーケティングを<span class="nb">手がけています</span>。ふだんの仕事でも Claude Code を使っています。</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section id="price">
   <div class="wrap">
     <div class="price">
@@ -647,7 +625,7 @@ footer p{text-wrap:pretty}
 
       <dl class="terms">
         <div><dt>動画</dt><dd>3講座・全39回<span class="nw">（合計 <span class="nb">約52分</span>）</span>・<span class="nw">全回字幕つき</span></dd></div>
-        <div><dt>見られる端末</dt><dd>パソコン・<wbr>スマホ・<wbr>タブレット</dd></div>
+        <div><dt>見られる端末</dt><dd>パソコン、スマホ、タブレット</dd></div>
         <div><dt>含まれるもの</dt><dd>いまある3つの講座の全レッスン。<span class="nw">これから増える講座。</span><span class="nw">コミュニティでの質問や投稿。</span></dd></div>
         <div><dt>見られる期間</dt><dd>メンバーのあいだは、いつでも。<span class="nw">解約しても、次の更新日までは見られます。</span></dd></div>
         <div><dt>返金</dt><dd>デジタルコンテンツのため、お支払い後の返金はしていません。<span class="nw">解約すれば、次の更新日からは請求されません。</span></dd></div>
@@ -785,16 +763,13 @@ footer p{text-wrap:pretty}
 })();
 </script>
 <script type="module">
-/* Safari などで word-break:auto-phrase が効かないとき、BudouX で文節の切れ目を入れる */
-if(!(window.CSS&&CSS.supports('word-break','auto-phrase'))){
-  import('https://cdn.jsdelivr.net/npm/budoux@0.7.0/+esm').then(function(m){
-    var parser=m.loadDefaultJapaneseParser();
-    document.querySelectorAll('h1,h2,h3,h4,p,li,summary,figcaption,dt,dd').forEach(function(el){
-      if(el.querySelector('p,li,h2,h3,ul,ol,dl,video'))return;
-      try{parser.applyToElement(el);}catch(e){}
-    });
-  }).catch(function(){});
-}
+/* 日本語の改行：BudouX で文節の切れ目を入れる（どのブラウザでも同じ折り返しにする） */
+import('./js/budoux/ja.js').then(function(m){
+  document.querySelectorAll('h1,h2,h3,h4,p,li,summary,figcaption,dt,dd').forEach(function(el){
+    if(el.querySelector('p,li,h2,h3,ul,ol,dl,video'))return;
+    try{m.parser.applyToElement(el);}catch(e){}
+  });
+}).catch(function(){});
 </script>
 </body>
 </html>
