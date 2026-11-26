@@ -129,6 +129,8 @@ export class PaymentService implements IPaymentService {
       success_url: params.successUrl,
       cancel_url: params.cancelUrl,
       automatic_tax: { enabled: ENV_CONFIG.STRIPE_AUTOMATIC_TAX },
+      // Shows a promotion code field. Used for the owner's ¥50 purchase test (single-use code).
+      allow_promotion_codes: true,
       metadata: params.metadata,
     };
 
